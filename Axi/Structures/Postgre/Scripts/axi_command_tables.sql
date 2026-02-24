@@ -3,7 +3,6 @@ CREATE TABLE axi_commands (
 	cmdtoken int4 NOT NULL,
 	command_group varchar(50) NOT NULL,
 	command varchar(50) NOT NULL,
-	active varchar(1) NULL DEFAULT 'T'::character varying,
 	CONSTRAINT axi_commands_pkey PRIMARY KEY (cmdtoken)
 )
 >>
@@ -40,46 +39,46 @@ CREATE TABLE axp_tstructprops (
 --axi_commands starts here
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(1, 'create', '', 'T')
+INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(1, 'create', '')
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(2, 'edit', '', 'T')
+INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(2, 'edit', '')
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(3, 'view', '', 'T')
+INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(3, 'view', '')
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(4, 'configure', '', 'T')
+INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(4, 'configure', '')
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(5, 'upload', '', 'T')
+INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(5, 'upload', '')
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(6, 'download', '', 'T')
+INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(6, 'download', '')
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(7, 'open', '', 'T')
+INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(7, 'open', '')
 >>
 
 --Not used now
-INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(8, 'set', '', 'F')
+INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(8, 'set', '')
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(9, 'run', '', 'T')
+INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(9, 'run', '')
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(10, 'analyse', '', 'T')
+INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(10, 'analyse', '')
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(11, 'ai', '', 'T')
+INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(11, 'ai', '')
 >>
 
 --axi_command_prompts starts here
