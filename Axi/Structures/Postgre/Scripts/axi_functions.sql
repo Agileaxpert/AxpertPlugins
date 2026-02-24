@@ -401,6 +401,10 @@ $function$
 >>
 
 <<
+DROP FUNCTION populate_axdirectsql_metadata()
+>>
+
+<<
 CREATE OR REPLACE FUNCTION populate_axdirectsql_metadata()
 RETURNS void
 LANGUAGE plpgsql
