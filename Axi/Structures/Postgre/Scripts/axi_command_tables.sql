@@ -3,6 +3,7 @@ CREATE TABLE axi_commands (
 	cmdtoken int4 NOT NULL,
 	command_group varchar(50) NOT NULL,
 	command varchar(50) NOT NULL,
+	
 	CONSTRAINT axi_commands_pkey PRIMARY KEY (cmdtoken)
 )
 >>
@@ -63,22 +64,22 @@ INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(6, 'download'
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(7, 'open', '')
+INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(7, 'open', '', 'T')
 >>
 
 --Not used now
-INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(8, 'set', '')
+-- INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(8, 'set', '', 'F')
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(9, 'run', '')
+INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(9, 'run', '', 'T')
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(10, 'analyse', '')
+INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(10, 'analyse', '', 'T')
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(11, 'ai', '')
+INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(11, 'ai', '', 'T')
 >>
 
 --axi_command_prompts starts here
