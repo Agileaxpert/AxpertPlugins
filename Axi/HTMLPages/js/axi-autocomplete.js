@@ -1,11 +1,13 @@
 ﻿(() => {
-    // 20-02-2026: Pre release version
+    // 26-02-2026: Pre release version
 
-    // /AxpertPlugins/Axi/HTMLPages/js/axi-autocomplete.js
+    // /AxPlugins/Axi/HTMLPages/js/axi-autocomplete.js
     
     let apiMetadataUrl = "";
     let apiMetadataConfigPromise = null;
     let apiMetadataConfigError = "";
+    let settingsPageButtons = null; 
+    let importExportButtons = null; 
 
     const goOption = {
         displaydata: "Go [Ctrl + Enter]",
@@ -85,8 +87,10 @@
             pegformnotification: handleCofigurePegFormNotification,
             permission: handleConfigurePermissions,
             access: handleConfigureAccess,
-            schdulednotification: handleConfigureSchduledNotification,
-            keyfield: handleKeyfield
+            schedulednotification: handleConfigureScheduledNotification,
+            keyfield: handleKeyfield,
+            newsandannouncement: handleConfigureNewsAndAnnouncement,
+            settings: handleConfigureSettings,
         },
         open: {
             default: handleOpenSource,
@@ -123,7 +127,7 @@
         end: { default: handleAiEnd, },
         editprompt: { default: () => handleAiButtons("openSystemPrompt") },
         analyze: { default: () => handleAiButtons("axiLoad"), },
-        upload: { default: () => handleAiButtons("openUpload") }
+        // upload: { default: () => handleAiButtons("openUpload") }
     };
 
 
@@ -176,7 +180,7 @@
     let activeFetches = new Set();
     let filteredObjects = [];
     let adsfieldvalueanddt = {};
-    let createfieldnamevaluesList = [];
+    let createfieldnamevaluesList = {};
     let mode = "";
     const aiModeCommands = {
         "connect": { "cmdToken": 11, "command": "", "commandGroup": "connect", "prompts": [] },
@@ -286,6 +290,11 @@
         INITIALIZATION
     =============================== */
     async function initCommands(isForced = false) {
+        const structType = getStructType(); 
+        if (mode === "ai") {
+            commands = aiModeCommands; 
+            return; 
+        }
 
         let appSessUrl = top.window.location.href.toLowerCase().substring("0", top.window.location.href.indexOf("/aspx/"));
         console.log("Origin: " + appSessUrl);
@@ -462,6 +471,10 @@
 
 
     async function loadList(sourceName, paramValue = "") {
+        if (sourceName === "axi_dummy") {
+            console.error("Axi Dummy source should not trigger loadList"); 
+            return; 
+        }
         const key = paramValue ? `${sourceName}_${paramValue}`.toLowerCase() : sourceName.toLowerCase();
         if (activeFetches.has(key)) return;
         activeFetches.add(key);
@@ -491,7 +504,8 @@
         // let targetUrl = "../CustomPages/Smartview_table_1769088257557.html";
         // let targetUrl = `${getAppBaseUrl()}/CustomPages/Smartview_table_1769088257557.html`;
         // let targetUrl = `${getAppBaseUrl()}/CustomPages/Smartview_table.html`;
-        let targetUrl = `${getAppBaseUrl()}/AxpertPlugins/Axi/HTMLPages/Smartview_table.html`;
+        // let targetUrl = `${getAppBaseUrl()}/plugins/Axi/HTMLPages/Smartview_table.html`;
+        let targetUrl = `../AxpertPlugins/Axi/HTMLPages/Smartview_table.html`;
 
         // let targetUrl = "../axidev/HTMLPages/Smartview_table_1769088257557.html";
 
@@ -618,7 +632,7 @@
                 targetUrl += `&${fieldName}=${encodeURIComponent(fieldValue)}`;
             }
             targetUrl += `&hltype=open`;
-            targetUrl += `&dummyload=false`;
+            targetUrl += `&dummyload=false♠`;
         }
 
         top.window.LoadIframe(targetUrl);
@@ -707,7 +721,8 @@
             let lastIndex = tokens.length - 1;
             let lastToken = tokens[lastIndex];
 
-            const numericRegex = /^-?\d*$/;
+            //const numericRegex = /^-?\d*$/;
+            const numericRegex = /^-?(?!.*\.\.)(?!.*'')(?!.*,,)[\d.,']*$/;
 
             if (!numericRegex.test(lastToken)) {
                 console.error("Type only numeric value");
@@ -763,12 +778,13 @@
     function getTokens(str) {
 
 
-        const regex = new RegExp(`"[^"]*"?|${OPERATOR_REGEX_PART}|[^\\s=<>!]+`, "g");
+        //const regex = new RegExp(`"[^"]*"?|${OPERATOR_REGEX_PART}|[^\\s=<>!]+`, "g");
+        const regex = new RegExp(`"[^"]*"|[^\\s]+`, "g");
         return str.match(regex) || [];
     }
 
     function cleanString(val) {
-        return (val || "").replace(/['"]/g, "").trim();
+        return (val || "").replace(/["]/g, "").trim();
     }
 
 
@@ -991,6 +1007,18 @@
                 pfToolbarButtons = getPFToolbarButtons();
                 allButtons = { ...pfToolbarButtons }
                 break;
+
+            case "s":
+                settingsPageButtons = getButtons(".Config-cont"); 
+                allButtons = { ...settingsPageButtons}; 
+                break; 
+
+            case "im":
+            case "ex": 
+                importExportButtons = getButtons(".card-footer "); 
+                allButtons = { ...importExportButtons}; 
+                break; 
+
 
 
             default:
@@ -1226,6 +1254,7 @@
                 if (hasValidParams) {
                     loadList(apiSourceName, paramValue);
                     console.log(axDatasourceObj);
+                    if (realSource.toLowerCase() === "axi_dummy") return []; 
                     return [`Loading ${realSource}...`];
                 }
                 return ["Waiting for input..."];
@@ -1242,7 +1271,7 @@
 
             let resultList = filtered.map(item => item.displaydata || item.caption || item.name || item.fname || item.keyfield);
 
-            if ((groupKey === "view" || groupKey === "configure") && tokens.length > 2 && tokens[1] !== "keyfield") {
+            if ((groupKey === "view" || groupKey === "configure") && tokens.length === 3 && tokens[1] !== "keyfield") {
                 resultList.unshift(goOption);
                 filteredObjects.unshift(goOption);
             }
@@ -1329,9 +1358,10 @@
             const cachedList = axDatasourceObj[cacheKey.toLowerCase()];
             if (cachedList) {
                 const found = cachedList.find(item =>
-                    (item.displaydata || "").toLowerCase() === tokenText.toLowerCase() ||
-                    (item.caption || "").toLowerCase() === tokenText.toLowerCase() ||
-                    (item.name || "").toLowerCase() === tokenText.toLowerCase()
+                    // 25/02/2026 - Updated to handle the comparison with displaydata, caption, name for robustness. Axi task no: Axi-0051
+                    (cleanString(item.displaydata) || "").toLowerCase() === tokenText.toLowerCase() ||
+                    (cleanString(item.caption) || "").toLowerCase() === tokenText.toLowerCase() ||
+                    (cleanString(item.name) || "").toLowerCase() === tokenText.toLowerCase()
                 );
                 if (found) {
                     let real = found.name  || found.sqlname || found.displaydata;
@@ -1361,11 +1391,7 @@
         console.log("Render called");
         list.innerHTML = "";
 
-        if (items.length > 0 && isSystemMessage(items[0])) {
-            activeIndex = -1;
-        } else {
-            activeIndex = 0;
-        }
+      
 
 
         const validItems = items.filter(item => {
@@ -1380,6 +1406,22 @@
         });
 
         console.log(`Valid Items: ${validItems.length}`);
+
+          if (items.length > 0 && isSystemMessage(items[0])) {
+            activeIndex = -1;
+        } else {
+            // const hasGoOption = validItems.some(item => typeof item === 'object' && item.name === "GO_ACTION");
+            // const hasSaveOption = validItems.some(item => typeof item === 'object' && item.name === "Save_ACTION");
+
+            // if (hasGoOption && hasSaveOption) {
+            //     activeIndex = 2; 
+            // } else if (hasGoOption || hasSaveOption) {
+            //     activeIndex = 1; 
+            // } else {
+            //     activeIndex = 0; 
+            // }
+            activeIndex = 0; 
+        }
 
         if (validItems.length === 0) {
             const li = document.createElement("li");
@@ -1457,14 +1499,14 @@
         else if (typeof selectedItem === 'object' && selectedItem.isExecutable && selectedItem.name === "Save_ACTION" && saveGroupKeyCheck === "create") {
             console.log("Save Option Selected...Submitting Data...");
             hide();
-            AxisaveDataFn(createfieldnamevaluesList, SET_COMMAND_STATE.transid, "axi_fieldlist", true, tokens, saveCommandConfig);
+            AxisaveDataFn(createfieldnamevaluesList, setCommandTransid, "axi_nongridfieldlist", true, tokens, saveCommandConfig);
             resetSetCommandState();
             return;
         }
         else if (typeof selectedItem === 'object' && selectedItem.isExecutable && selectedItem.name === "Save_ACTION" && saveGroupKeyCheck === "edit") {
             console.log("Save Option Selected...Submitting Data...");
             hide();
-            AxisaveDataFn(createfieldnamevaluesList, SET_COMMAND_STATE.transid, "axi_fieldlist", false, tokens, saveCommandConfig);
+            AxisaveDataFn(createfieldnamevaluesList, setCommandTransid, "axi_nongridfieldlist", false, tokens, saveCommandConfig);
             resetSetCommandState();
             return;
         }
@@ -1820,7 +1862,7 @@
                     adsList = null;
                     axDatasourceObj = {};
                     resolvedParams = {};
-                    createfieldnamevaluesList = [];
+                    createfieldnamevaluesList = {};
                     resetSetCommandState();
 
                     await initCommands(true);
@@ -1886,33 +1928,67 @@
             const grpKey = tokens[0];
 
             let saveCommandConfig;
-            if(grpKey)
-              saveCommandConfig = commands[grpKey];
+            if (grpKey)
+                saveCommandConfig = commands[grpKey];
 
-            if (e.key === 'Backspace' && (grpKey === "create" || grpKey === "edit") ){
+            if (e.key === 'Backspace' && (grpKey === "create" || grpKey === "edit")) {
+                let transIDcheck = setCommandTransid;
                 if (input.selectionStart !== input.selectionEnd) {
-                    resetSetCommandState(); 
-                    createfieldnamevaluesList = [];
-                    return; 
+                    createfieldnamevaluesList[transIDcheck] = [];
+                    setCommandTransid = null;
+                    resetSetCommandState();
+                    return;
                 }
                 e.preventDefault();
                 hide();
 
                 const cursorPos = input.selectionStart;
 
-                tokens.pop();
+                //tokens.pop();
 
-                if (input.value[cursorPos - 1] === " ") { 
+                if (input.value[cursorPos - 1] === " " && !SET_COMMAND_STATE.currentField?.trim()) {
 
                     console.log("Deleted a space using Backspace");
                 }
                 else {
-                    createfieldnamevaluesList.pop();
-                 
+                    //if (createfieldnamevaluesList?.[transIDcheck]?.length > 0 && !SET_COMMAND_STATE.currentField) {
+                    //    createfieldnamevaluesList[transIDcheck].pop();
+                    //}
+                    if (createfieldnamevaluesList?.[transIDcheck]?.length > 0) {
+
+                        const list = createfieldnamevaluesList[transIDcheck];
+                        const lastListItem = list[list.length - 1];
+
+                        const lastTokenValue = cleanCommandToken(tokens[tokens.length - 1]);
+                        const actualLastTokenValue = tryResolveToken(tokens.length - 1, lastTokenValue, saveCommandConfig,false);
+
+                        if (lastListItem) {
+
+                            const parts = lastListItem.split("~");
+                            const listValue = parts[0];
+
+                            if (listValue === actualLastTokenValue) {
+
+                                console.log("Removing last matching field:", lastListItem);
+                                createfieldnamevaluesList[transIDcheck].pop();
+
+                            } else {
+
+                                console.log("Last token does not match last list value. No pop.");
+                            }
+                        }
+                    }
+
                 }
+                tokens.pop();
+
                 input.value = tokens.join(" ");
 
+                console.log("After backspace our list : ");
+                console.log(createfieldnamevaluesList[transIDcheck]);
+
                 resetSetCommandState();
+                handleInput(); 
                 
 
             }
@@ -2008,9 +2084,9 @@
                 console.log("Save Option Selected...Submitting Data...");
                 hide();
                 if (grpKey === "create")
-                    AxisaveDataFn(createfieldnamevaluesList, SET_COMMAND_STATE.transid, "axi_fieldlist", true, tokens, saveCommandConfig);
+                    AxisaveDataFn(createfieldnamevaluesList, setCommandTransid, "axi_nongridfieldlist", true, tokens, saveCommandConfig);
                 else
-                    AxisaveDataFn(createfieldnamevaluesList, SET_COMMAND_STATE.transid, "axi_fieldlist", false, tokens, saveCommandConfig);
+                    AxisaveDataFn(createfieldnamevaluesList, setCommandTransid, "axi_nongridfieldlist", false, tokens, saveCommandConfig);
                 resetSetCommandState();
                 return;
             }
@@ -2132,13 +2208,26 @@
 
         setTimeout(() => {
             input.focus();
-            input.select();
+
+            if (tokens.length > 0) {
+                const firstToken = tokens[0]; 
+
+                let startIndex = input.value.indexOf(firstToken) + firstToken.length; 
+
+                while(input.value[startIndex] === ' ') {
+                    startIndex++; 
+                }
+
+                input.setSelectionRange(startIndex,input.value.length); 
+
+            }
+        
         }, 200)
     }
 
 
     function cleanCommandToken(val = "") {
-        return val.replace(/['"]/g, "").trim();
+        return val.replace(/["]/g, "").trim();
     }
 
     function dispatchCommand(ctx) {
@@ -2526,7 +2615,7 @@
 
     }
 
-    function handleConfigureSchduledNotification({ tokens, commandConfig }) {
+    function handleConfigureScheduledNotification({ tokens, commandConfig }) {
 
         let transId = "a__pn";
         let fieldname = "name";
@@ -2606,11 +2695,26 @@
 
     }
 
+    function handleConfigureNewsAndAnnouncement({tokens, commandConfig}) {
+        let transId = "a__na"; 
+        const fieldname = "title";
+        
+        let rawTitle = cleanCommandToken(tokens[2]); 
+
+        setEditSessionState(transId); 
+        redirectToTstruct(transId, false, fieldname, rawTitle); 
+    }
+
+    function handleConfigureSettings({tokens, commandConfig}) {
+        window.LoadIframe("../aspx/Configuration.aspx/LoadUserAppSettings"); 
+    }
+
 
 
     function handleConfigureProperties({ tokens, commandConfig }) {
+        const targetUrl = "../aspx/tstruct.aspx?act=load&transid=ad_pr&axpdef_axpertpropsid=1"; 
 
-        window.LoadIframe("../aspx/tstruct.aspx?transid=ad_pr");
+        top.window.LoadIframe(targetUrl);
 
     }
 
@@ -2637,7 +2741,15 @@
       */
 
     function handleUpload({ tokens, commandConfig }) {
+
+        if (mode === "ai") {
+            handleAiButtons("openUpload"); 
+
+        } else {
         window.LoadIframe("../aspx/ImportAll.aspx");
+
+
+        }
 
 
 
@@ -3092,7 +3204,9 @@
     }
 
     function handleOpenDbConsole() {
-        window.openDeveloperStudio("AxDBScript.aspx");
+        // Task Axi-0034 completed
+        // window.openDeveloperStudio("AxDBScript.aspx");
+        window.LoadIframe("../aspx/AxDBScript.aspx"); 
 
     }
 
@@ -3166,6 +3280,17 @@
                 allButtons = [...Object.values(pfToolbarButtons)]
                 break;
 
+            case "s":
+                if (!settingsPageButtons) settingsPageButtons = getButtons(".Config-cont"); 
+                allButtons = [...Object.values(settingsPageButtons)]
+                break; 
+
+            case "im":
+            case "ex":
+                if (!importExportButtons) importExportButtons = getButtons(".card-footer"); 
+                allButtons = [...Object.values(importExportButtons)]; 
+                break; 
+
 
             default:
                 console.error("Invalid StructType")
@@ -3225,43 +3350,106 @@
         return `${y}-${m}-${d}`; // ISO
     }
 
+    //function resolveLikeOperator(rawValue) {
+
+    //    if (!rawValue.includes("%")) {
+    //        return { operator: "equal", value: rawValue };
+    //    }
+
+    //    const startsWithPercent = rawValue.startsWith("%");
+    //    const endsWithPercent = rawValue.endsWith("%");
+
+    //    if (startsWithPercent && endsWithPercent) {
+    //        return {
+    //            operator: "contains",
+    //            value: rawValue.slice(1, -1)
+    //        };
+    //    }
+
+    //    if (startsWithPercent) {
+    //        return {
+    //            operator: "endswith",
+    //            value: rawValue.slice(1)
+    //        };
+    //    }
+
+    //    if (endsWithPercent) {
+    //        return {
+    //            operator: "startswith",
+    //            value: rawValue.slice(0, -1)
+    //        };
+    //    }
+
+    //    return { operator: "equal", value: rawValue };
+    //}
+
     function extractAdsFilters(tokens) {
+
         const filters = [];
-
-
-        let i = 2;
+        let i = 2; 
 
         while (i < tokens.length) {
 
             const rawColToken = cleanCommandToken(tokens[i]);
-            if (!rawColToken) { i++; continue; }
-
+            if (!rawColToken) {
+                i++;
+                continue;
+            }
 
             let nextTokenRaw = cleanCommandToken(tokens[i + 1] || "");
 
-            let operator = "=";
-            let valueTokenIndex = -1;
+            let operator = "";
             let rawValue = "";
 
-            if (OPERATORS_SET.has(nextTokenRaw)) {
 
-                operator = nextTokenRaw;
-                rawValue = cleanCommandToken(tokens[i + 2] || "");
-                valueTokenIndex = i + 2;
+            let matchedOperator = null;
+
+            for (let op of OPERATORS_LIST) {
+                if (nextTokenRaw.startsWith(op)) {
+                    matchedOperator = op;
+                    break;
+                }
+            }
 
 
-                i += 3;
-            } else {
+            let colMetadata = adsfieldvalueanddt[rawColToken] || {};
 
-                operator = "=";
+            if (matchedOperator) {
+
+                operator = matchedOperator;
+                rawValue = nextTokenRaw.slice(matchedOperator.length);
+                i += 2;
+
+            }
+            else {
+
                 rawValue = nextTokenRaw;
-                valueTokenIndex = i + 1;
 
+                if (colMetadata?.datatype === "c" || colMetadata.datatype === 't') {
+                    if (rawValue.startsWith("%") && rawValue.endsWith("%")) {
+                        operator = "contains";
+                        rawValue = rawValue.slice(1, -1);
+                    }
+                    else if (rawValue.endsWith("%")) {
+                        operator = "startswith";
+                        rawValue = rawValue.slice(0, -1);
+                    }
+                    else if (rawValue.startsWith("%")) {
+                        operator = "endswith";
+                        rawValue = rawValue.slice(1);
+                    }
+                    else {
+                    operator = "equal";
+                    }
+                }
+                else {
+                    operator = "equal";
+                }
 
                 i += 2;
             }
 
-            const colMetadata = adsfieldvalueanddt[rawColToken] || {};
+            colMetadata = adsfieldvalueanddt[rawColToken] || {};
 
             if (colMetadata?.datatype === "d") {
                 rawValue = normalizeDate(rawValue);
@@ -3278,6 +3466,59 @@
 
         return filters;
     }
+    //function extractAdsFilters(tokens) {
+    //    const filters = [];
+
+
+    //    let i = 2;
+
+    //    while (i < tokens.length) {
+
+    //        const rawColToken = cleanCommandToken(tokens[i]);
+    //        if (!rawColToken) { i++; continue; }
+
+
+    //        let nextTokenRaw = cleanCommandToken(tokens[i + 1] || "");
+
+    //        let operator = "=";
+    //        let valueTokenIndex = -1;
+    //        let rawValue = "";
+
+    //        if (OPERATORS_SET.has(nextTokenRaw)) {
+
+    //            operator = nextTokenRaw;
+    //            rawValue = cleanCommandToken(tokens[i + 2] || "");
+    //            valueTokenIndex = i + 2;
+
+
+    //            i += 3;
+    //        } else {
+
+    //            operator = "=";
+    //            rawValue = nextTokenRaw;
+    //            valueTokenIndex = i + 1;
+
+
+    //            i += 2;
+    //        }
+
+    //        const colMetadata = adsfieldvalueanddt[rawColToken] || {};
+
+    //        if (colMetadata?.datatype === "d") {
+    //            rawValue = normalizeDate(rawValue);
+    //        }
+
+    //        filters.push({
+    //            field: rawColToken,
+    //            operator: operator,
+    //            value: rawValue,
+    //            datatype: colMetadata.datatype,
+    //            isAccept: colMetadata.isAccept
+    //        });
+    //    }
+
+    //    return filters;
+    //}
 
 
 
@@ -3401,37 +3642,63 @@
 
         const bodyId = iframeDoc.body?.id || "";
 
-        if ((page.endsWith("/tstruct.aspx") || page.includes("tstruct.aspx")) && bodyId !== "Entitymanagement_Body") {
+        const cardContainer = document.querySelector(".cardsPageWrapper"); 
+
+        const isCardContainerHidden = cardContainer.classList.contains("d-none"); 
+
+        if ((page.endsWith("/tstruct.aspx") || page.includes("tstruct.aspx")) && bodyId !== "Entitymanagement_Body" && isCardContainerHidden) {
             return "t" // tstruct page
         }
 
 
 
-        if (page.endsWith("/iview.aspx") || page.includes("iview.aspx")) {
+        if ((page.endsWith("/iview.aspx") || page.includes("iview.aspx")) && isCardContainerHidden) {
             return "i";  // IView page
         }
 
-        if ((page.endsWith("/entity.aspx") || page.includes("entity.aspx")) && bodyId === "Entitymanagement_Body") {
+
+
+        if ((page.endsWith("/entity.aspx") || page.includes("entity.aspx")) && bodyId === "Entitymanagement_Body" && isCardContainerHidden) {
             return "e";  // Entity page
         }
 
 
 
-        if ((page.endsWith("/entityform.aspx") || page.includes("entityform.aspx")) || bodyId === "Entitymanagement_Body") {
+        if ((page.endsWith("/entityform.aspx") || page.includes("entityform.aspx") || bodyId === "Entitymanagement_Body") && isCardContainerHidden) {
             return "ef";  // Entity Data page
         }
 
-        if (src.includes("/CustomPages") || src.includes("/axidev")) {
+        if ((src.includes("/CustomPages") || src.includes("/axidev") || src.includes("/HTMLPages")) && isCardContainerHidden) {
             return "c"; // Custom page
 
         }
 
+         if (src.includes("../aspx/ImportAll.aspx") && isCardContainerHidden) {
+            return "im"; // Import page
+
+        }
+
+         if (src.includes("../aspx/ExportNew.aspx") && isCardContainerHidden) {
+            return "ex"; // Export page
+
+        }
+
+
+
         // ../aspx/processflow.aspx?activelist=t&hdnbElapsTime=0
 
 
-        if (page.endsWith("/processflow.aspx") || page.includes("processflow.aspx")) {
+        if ((page.endsWith("/processflow.aspx") || page.includes("processflow.aspx")) && isCardContainerHidden) {
             return "pf"; // Process flow page
 
+        }
+
+        if (src.includes("/aspx/Configuration.aspx/LoadUserAppSettings") && isCardContainerHidden) {
+            return "s"; // Settings page
+        }
+
+        if (page.endsWith("/axibot.html") || page.includes("/axibot.html")) {
+            return "b"; // Axibot page
         }
 
 
@@ -3483,6 +3750,8 @@
 
         }
 
+        
+
 
 
         return false;
@@ -3516,6 +3785,7 @@
             if (!id) return;
 
             const label = extractButtonLabel(btn);
+            if (label.toLowerCase() === "export" || label.toLowerCase() === "theme" || label.toLowerCase() === "field captions" || label.toLowerCase() === "view" || label.toLowerCase() === "pattern") return; 
             if (!label) return;
 
             result[id] = {
@@ -3529,6 +3799,54 @@
         return result;
 
     }
+
+    function getButtons(querySelector) {
+        const iframe = document.getElementById("middle1");
+        if (!iframe) return {};
+
+        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+        if (!doc) return {};
+
+        const container = doc.querySelector(`${querySelector}`);
+        if (!container) return {};
+
+        const buttons = getAllActionButtons(container);
+
+        const result = {};
+
+        buttons.forEach((btn) => {
+            // if (!hasAction(btn)) return;
+            if (btn.type === "hidden") return; 
+            if (btn.style.display === "none") return; 
+            if (btn.offsetParent === null) return; 
+
+            const id = btn.id || btn.getAttribute("data-id") || btn.getAttribute("title") || btn.name || btn.getAttribute("data-kt-stepper-action");
+            if (!id) return;
+            // const label = btn.innerText.trim();
+            const label = extractButtonLabel(btn);
+            if (!label) console.log("There is no label for Element: " + btn);
+
+
+
+            result[id] = {
+                id,
+                label,
+                element: btn,
+                click: () => btn.click()
+            };
+        });
+
+        return result;
+    }
+
+    function getAllActionButtons(doc) {
+    return doc.querySelectorAll(`
+        a,
+        button,
+        input[type="button"],
+        input[type="submit"]
+    `);
+}
 
     function watchDesignModeChange(callback) {
         const iframe = document.getElementById("middle1");
@@ -3712,6 +4030,9 @@
     }
 
 
+     
+
+
     function resetSetCommandState() {
         SET_COMMAND_STATE.isNextField = false;
         SET_COMMAND_STATE.currentField = null;
@@ -3777,7 +4098,7 @@
             }
             else {
 
-                if (prevValueInSet == "Custom") {
+                if (prevValueInSet.toLowerCase() == "custom") {
                     //let settokens = tokens
                     //let lastIndex = tokens.length - 2;
                     //let lastToken = tokens[lastIndex];
@@ -3828,7 +4149,7 @@
     }
 
     function processCreateCommand(tokens, commandConfig, createCommandSourceObj) {
-        const targetIndex = tokens.length - 1;
+        let targetIndex = tokens.length - 1;
         const partialTyped = cleanString(tokens[targetIndex]);
 
         const createTransId = cleanCommandToken(tokens[1]);
@@ -3856,7 +4177,8 @@
                 let previousColumnName = SET_COMMAND_STATE.currentField;
                 previousColumnName = tryResolveToken(targetIndex - 2, previousColumnName, commandConfig, false);
                 let previousColumnValue = SET_COMMAND_STATE.currentFieldValue;
-                AddFieldstoList(previousColumnName, 1, previousColumnValue);
+                //AddFieldstoList(previousColumnName, 1, previousColumnValue);
+                AddFieldstoList(previousColumnName, 1, previousColumnValue, setCommandTransid);
             }
 
 
@@ -3891,17 +4213,16 @@
 
             let resultList = filtered.map(item => item.displaydata || item.caption || item.name || item.fname || item.keyfield);
 
-            if (SET_COMMAND_STATE.currentField || (targetIndex % 2 !== 0 && targetIndex >= 4)) {
+            if ((SET_COMMAND_STATE.currentField || (targetIndex % 2 !== 0 && targetIndex >= 4)) && filteredObjects.length > 0) {
                 resultList.unshift(goOption);
                 resultList.unshift(saveOption);
                 filteredObjects.unshift(goOption);
                 filteredObjects.unshift(saveOption);
             }
-            else if (tokens.length >= 3) {
+            else if (tokens.length >= 3 && filteredObjects.length > 0) {
                 resultList.unshift(goOption);
                 filteredObjects.unshift(goOption);
             }
-
         
             SET_COMMAND_STATE.currentField = null;
             SET_COMMAND_STATE.currentFieldType = null
@@ -3944,8 +4265,12 @@
                 ) || null;
 
                 if (!columnMetadata) {
+
+                    //console.log("In processEditCommond " + createCommandSourceObj + " is empty");
+                    //showToast("Please Try Again Later.");
+
                     console.log("Selected Field Name is Not in the List " + prevColumnName);
-                    showToast("Please Select Fields from the list");
+                    showToast("Please Select Field from the list",5000,true);
 
                     let settokens = [...tokens]
                     let lastIndex = settokens.length - 2;
@@ -3953,9 +4278,58 @@
 
                     settokens[lastIndex] = "";
 
+                    targetIndex = targetIndex - 1;
+
                     input.value = settokens.join(" ");
                     updateDynamicHintFromPrompt({ prompt: "fieldName" })
-                    return [];
+                    //return [];
+
+
+                    const usedColumns = new Set();
+                    for (let i = 3; i < targetIndex; i += 2) {
+                        const usedToken = cleanString(tokens[i]).toLowerCase();
+                        usedColumns.add(usedToken);
+                    }
+
+                    const filtered = colList.filter(col => {
+                        const rawDisplay = (col.displaydata || col.name).toLowerCase();
+                        const cleanDisplay = rawDisplay
+                            .replace(/\s*\(.*?\)/g, "")
+                            .replace(/\s*\[[^\]]+\]\s*$/, "")
+                            .trim();
+                        const rawName = (col.name || "").toLowerCase();
+                        const isUsed = usedColumns.has(cleanDisplay) || usedColumns.has(rawName);
+                        return !isUsed;
+                    });
+
+                    filteredObjects = filtered;
+
+                    let resultList = filtered.map(item => item.displaydata || item.caption || item.name || item.fname || item.keyfield);
+
+                    SET_COMMAND_STATE.currentField = null;
+
+                    if (SET_COMMAND_STATE.currentField || (targetIndex % 2 !== 0 && targetIndex >= 4)) {
+                        resultList.unshift(goOption);
+                        resultList.unshift(saveOption);
+                        filteredObjects.unshift(goOption);
+                        filteredObjects.unshift(saveOption);
+                    }
+                    else if (tokens.length >= 3) {
+                        resultList.unshift(goOption);
+                        filteredObjects.unshift(goOption);
+                    }
+
+
+                    SET_COMMAND_STATE.currentField = null;
+                    SET_COMMAND_STATE.currentFieldType = null
+                    SET_COMMAND_STATE.currentFieldValue = null;
+                    SET_COMMAND_STATE.isNextField = false;
+                    SET_COMMAND_STATE.isDropDown = false;
+
+
+
+
+                    return resultList;
                 }
 
                 let isAccept;
@@ -3977,7 +4351,7 @@
                 else datatype = SET_COMMAND_STATE.currentFieldType;
 
 
-                if (datatype === 'c' || datatype === 'n') {
+                if (datatype === 'c' || datatype === 'n' || datatype === "t") {
                     if (isAccept) {
                         let acceptedValue = cleanString(tokens[tokens.length - 1]);
                         if (acceptedValue)
@@ -4001,7 +4375,7 @@
                         var params3 = columnMetadata.normalized;
                         var params4 = columnMetadata.fromlist;
 
-                        params2 += ";" + getFieldNameandItsValue(createfieldnamevaluesList, commandConfig);
+                        params2 += ";" + getFieldNameandItsValue(createfieldnamevaluesList[setCommandTransid], commandConfig);
 
                         console.log(params2);
 
@@ -4018,7 +4392,7 @@
                         const list = axDatasourceObj[sourceKey];
                         if (!Array.isArray(list)) return [];
 
-                        const filtered = list.filter(col => {
+                        let filtered = list.filter(col => {
                             const rawDisplay = String(col.displaydata || col.name)
                                 .toLowerCase();
 
@@ -4027,6 +4401,19 @@
 
                             return !normalizedTypedValue || rawDisplay.includes(normalizedTypedValue);
                         });
+
+                        if (acceptedValue && filtered.length === 0) {
+                            console.log("User given value which is not in the dropdown");
+                            showToast("Please select a valid value from the dropdown",5000,true);
+   
+                            let lastIndex = tokens.length - 1;
+                            let lastToken = tokens[lastIndex];
+                            tokens[lastIndex] = "";
+
+                            input.value = tokens.join(" ");
+
+                            filtered = list;
+                        } 
 
 
                         return filtered.map(col => col.displaydata || col.name);
@@ -4125,7 +4512,7 @@
             }
             else {
 
-                if (prevValueInSet == "Custom") {
+                if (prevValueInSet.toLowerCase() == "custom") {
                     //let settokens = tokens
                     //let lastIndex = tokens.length - 2;
                     //let lastToken = tokens[lastIndex];
@@ -4177,7 +4564,7 @@
     }
 
     function processEditCommand(tokens, commandConfig, createCommandSourceObj) {
-        const targetIndex = tokens.length - 1;
+        let targetIndex = tokens.length - 1;
         const partialTyped = cleanString(tokens[targetIndex]);
 
         const createTransId = cleanCommandToken(tokens[1]);
@@ -4205,7 +4592,7 @@
                 let previousColumnName = SET_COMMAND_STATE.currentField;
                 previousColumnName = tryResolveToken(targetIndex - 2, previousColumnName, commandConfig, false);
                 let previousColumnValue = SET_COMMAND_STATE.currentFieldValue;
-                AddFieldstoList(previousColumnName, 1, previousColumnValue);
+                AddFieldstoList(previousColumnName, 1, previousColumnValue, setCommandTransid);
             }
 
 
@@ -4240,7 +4627,7 @@
 
             let resultList = filtered.map(item => item.displaydata || item.caption || item.name || item.fname || item.keyfield);
 
-            if (SET_COMMAND_STATE.currentField || (targetIndex % 2 !== 0 && targetIndex >= 4)) {
+            if ((SET_COMMAND_STATE.currentField || (targetIndex % 2 == 0 && targetIndex >= 4)) && filteredObjects.length > 0) {
                 //resultList.unshift(goOption);
                 resultList.unshift(saveOption);
                 //filteredObjects.unshift(goOption);
@@ -4311,7 +4698,7 @@
                 const colList = axDatasourceObj[colSourceKey];
 
                 if (!colList) {
-                    console.log("In processCreateCommond " + createCommandSourceObj + " is empty");
+                    console.log("In processEditCommond " + createCommandSourceObj + " is empty");
                     showToast("Please Try Again Later.");
                     return [];
                 }                     
@@ -4323,8 +4710,11 @@
                 ) || null;
 
                 if (!columnMetadata) {
+                    //console.log("In processEditCommond " + createCommandSourceObj + " is empty");
+                    //showToast("Please Try Again Later.");
+
                     console.log("Selected Field Name is Not in the List " + prevColumnName);
-                    showToast("Please Select Fields from the list");
+                    showToast("Please Select Field only from the list",5000,true);
 
                     let settokens = [...tokens]
                     let lastIndex = settokens.length - 2;
@@ -4332,9 +4722,60 @@
 
                     settokens[lastIndex] = "";
 
+                    targetIndex = targetIndex - 1;
+
                     input.value = settokens.join(" ");
                     updateDynamicHintFromPrompt({ prompt: "fieldName" })
-                    return [];
+
+                    //return [];
+
+                  
+                    const usedColumns = new Set();
+                    for (let i = 4; i < targetIndex; i += 2) {
+                        const usedToken = cleanString(tokens[i]).toLowerCase();
+                        usedColumns.add(usedToken);
+                    }
+
+                    const filtered = colList.filter(col => {
+                        const rawDisplay = (col.displaydata || col.name).toLowerCase();
+                        const cleanDisplay = rawDisplay
+                            .replace(/\s*\(.*?\)/g, "")
+                            .replace(/\s*\[[^\]]+\]\s*$/, "")
+                            .trim();
+                        const rawName = (col.name || "").toLowerCase();
+                        const isUsed = usedColumns.has(cleanDisplay) || usedColumns.has(rawName);
+                        return !isUsed;
+                    });
+
+                    filteredObjects = filtered;
+
+                    let resultList = filtered.map(item => item.displaydata || item.caption || item.name || item.fname || item.keyfield);
+
+                    SET_COMMAND_STATE.currentField = null;
+
+                    if (SET_COMMAND_STATE.currentField || (targetIndex % 2 == 0 && targetIndex >= 4)) {
+                        //resultList.unshift(goOption);
+                        resultList.unshift(saveOption);
+                        //filteredObjects.unshift(goOption);
+                        filteredObjects.unshift(saveOption);
+                    }
+                    //else if (tokens.length >= 3) {
+                    //    //resultList.unshift(goOption);
+                    //    //filteredObjects.unshift(goOption);
+                    //}
+
+
+                    SET_COMMAND_STATE.currentField = null;
+                    SET_COMMAND_STATE.currentFieldType = null
+                    SET_COMMAND_STATE.currentFieldValue = null;
+                    SET_COMMAND_STATE.isNextField = false;
+                    SET_COMMAND_STATE.isDropDown = false;
+
+
+
+
+                    return resultList;
+
                 }
 
                 let isAccept;
@@ -4356,7 +4797,7 @@
                 else datatype = SET_COMMAND_STATE.currentFieldType;
 
 
-                if (datatype === 'c' || datatype === 'n') {
+                if (datatype === 'c' || datatype === 'n' || datatype === "t") {
                     if (isAccept) {
                         let acceptedValue = cleanString(tokens[tokens.length - 1]);
                         if (acceptedValue)
@@ -4373,6 +4814,7 @@
                         const sourceName = "axi_firesql";
 
 
+
                         var params1 = columnMetadata.fldsql;
                         var params2 = prepareKeyValueString(allGloblVars);
                         console.log(params2);
@@ -4380,7 +4822,7 @@
                         var params4 = columnMetadata.fromlist;
 
 
-                        params2 += ";" + getFieldNameandItsValue(createfieldnamevaluesList, commandConfig);
+                        params2 += ";" + getFieldNameandItsValue(createfieldnamevaluesList[setCommandTransid], commandConfig);
 
                         console.log(params2);
 
@@ -4397,7 +4839,7 @@
                         const list = axDatasourceObj[sourceKey];
                         if (!Array.isArray(list)) return [];
 
-                        const filtered = list.filter(col => {
+                        let filtered = list.filter(col => {
                             const rawDisplay = String(col.displaydata || col.name)
                                 .toLowerCase();
 
@@ -4406,6 +4848,20 @@
 
                             return !normalizedTypedValue || rawDisplay.includes(normalizedTypedValue);
                         });
+
+                        if (acceptedValue && filtered.length === 0) {
+                            console.log("User given value which is not in the dropdown");
+                            showToast("Please select a valid value from the dropdown",5000,true);
+
+                            let lastIndex = tokens.length - 1;
+                            let lastToken = tokens[lastIndex];
+                            tokens[lastIndex] = "";
+
+                            input.value = tokens.join(" ");
+
+                            filtered = list;
+                        } 
+
 
 
                         return filtered.map(col => col.displaydata || col.name);
@@ -4449,23 +4905,29 @@
             else return [];
         }
     }
-    function AddFieldstoList(fieldName, rowNo, value) {
+   function AddFieldstoList(fieldName, rowNo, value, transid) {
 
-        if (!fieldName || !value) return;
+        if (!fieldName || !value || !transid) return;
+
+        if (!createfieldnamevaluesList[transid]) {
+            createfieldnamevaluesList[transid] = [];
+        }
+
+        const currentList = createfieldnamevaluesList[transid];
 
         const keyPrefix = `${fieldName}~${rowNo}=`;
-        const existingIndex = createfieldnamevaluesList.findIndex(item =>
+        const existingIndex = currentList.findIndex(item =>
             item.startsWith(keyPrefix)
         );
 
         const formatted = `${fieldName}~${rowNo}=${value}`;
 
         if (existingIndex !== -1) {
-            if (createfieldnamevaluesList[existingIndex] !== formatted) {
-                createfieldnamevaluesList[existingIndex] = formatted;
+            if (currentList[existingIndex] !== formatted) {
+                currentList[existingIndex] = formatted;
             }
         } else {
-            createfieldnamevaluesList.push(formatted);
+            currentList.push(formatted);
         }
     }
 
@@ -4506,48 +4968,189 @@
     }
 
 
-    function AxisetFieldValue(actualFieldName, value, rowNo) {
-        const fldid = actualFieldName + "000F" + rowNo;
+    // function AxisetFieldValue(actualFieldName, value, rowNo) {
+    //     const fldid = actualFieldName + "000F" + rowNo;
 
-        const iframe = document.getElementById("middle1");
+    //     const iframe = document.getElementById("middle1");
 
-        if (iframe) {
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-            const iframeDocElement = iframeDoc.getElementById(fldid);
-            //const iframeDoc = iframe.contentWindow;
+    //     if (iframe) {
+    //         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    //         const iframeDocElement = iframeDoc.getElementById(fldid);
+    //         //const iframeDoc = iframe.contentWindow;
 
-            //$("#middle1")[0].contentWindow.CallSetFieldValue(fldid, FldVal);
-            //$("#middle1")[0].contentWindow.MainBlur($(fldid))
+    //         //$("#middle1")[0].contentWindow.CallSetFieldValue(fldid, FldVal);
+    //         //$("#middle1")[0].contentWindow.MainBlur($(fldid))
 
-            //$("#middle1")[0].contentWindow.MainBlur($(fldid))
-            //$("#middle1")[0].contentWindow.UpdateFieldArray(fldid, fldDbRowNo, fldValue, "parent", "");
-            //$("#middle1")[0].contentWindow.CallSetFieldValue(fldid, fldValue);
+    //         //$("#middle1")[0].contentWindow.MainBlur($(fldid))
+    //         //$("#middle1")[0].contentWindow.UpdateFieldArray(fldid, fldDbRowNo, fldValue, "parent", "");
+    //         //$("#middle1")[0].contentWindow.CallSetFieldValue(fldid, fldValue);
 
-            if (iframeDocElement) {
+    //         if (iframeDocElement) {
 
-                ///
-                /// For dependency we need to verify this logic.
-                ////
+    //             ///
+    //             /// For dependency we need to verify this logic.
+    //             ////
                 
-                iframeDocElement.value = value;
+    //             iframeDocElement.value = value;
 
-                iframeDocElement.dispatchEvent(new Event("input", { bubbles: true }));
-                iframeDocElement.dispatchEvent(new Event("change", { bubbles: true }));
-                iframeDocElement.dispatchEvent(new Event("blur", { bubbles: true }));
+    //             iframeDocElement.dispatchEvent(new Event("input", { bubbles: true }));
+    //             iframeDocElement.dispatchEvent(new Event("change", { bubbles: true }));
+    //             iframeDocElement.dispatchEvent(new Event("blur", { bubbles: true }));
 
 
-                ///Product Field Set Logic
-                //iframeDoc.UpdateFieldArray(fldid, rowNo, value, "parent", "");
-                //iframeDoc.CallSetFieldValue(fldid, value);
-                //iframeDoc.MainBlur($(fldid));
-                return true;
+    //             ///Product Field Set Logic
+    //             //iframeDoc.UpdateFieldArray(fldid, rowNo, value, "parent", "");
+    //             //iframeDoc.CallSetFieldValue(fldid, value);
+    //             //iframeDoc.MainBlur($(fldid));
+    //             return true;
+    //         }
+    //         else {
+    //             return false;
+    //         }
+    //     }
+    //     else return false;
+    // }
+
+    function AxisetFieldValue(actualFieldName, value, rowNo) {
+
+    const fldid = actualFieldName + "000F" + rowNo;
+    const iframe = document.getElementById("middle1");
+    if (!iframe) return false;
+
+    const iframeWin = iframe.contentWindow;
+    const iframeDoc = iframe.contentDocument || iframeWin.document;
+
+    try {
+
+        /* ---------------- MULTI SELECT (SELECT2) ---------------- */
+
+        const multiSelectEl = iframeDoc.getElementById(fldid);
+
+        if (multiSelectEl && multiSelectEl.multiple) {
+
+            const valuesArray = (value || "")
+                .split(",")
+                .map(v => v.trim())
+                .filter(Boolean);
+
+            if (iframeWin.$) {
+
+                const $el = iframeWin.$(multiSelectEl);
+
+                // Ensure options exist
+                valuesArray.forEach(val => {
+                    if ($el.find("option[value='" + val + "']").length === 0) {
+                        const newOption = new iframeWin.Option(val, val, true, true);
+                        $el.append(newOption);
+                    }
+                });
+
+                // Set UI
+                $el.val(valuesArray).trigger("change");
             }
-            else {
-                return false;
+
+            // 🔥 VERY IMPORTANT — update Axpert internal array
+            if (typeof iframeWin.UpdateFieldArray === "function") {
+                iframeWin.UpdateFieldArray(fldid, rowNo, value, "parent", "");
             }
+
+            return true;
         }
-        else return false;
+
+           /* ---------------- SINGLE SELECT (SELECT2) ---------------- */
+
+   const singleSelectEl = iframeDoc.getElementById(fldid);
+
+   if (singleSelectEl && !singleSelectEl.multiple && singleSelectEl.classList.contains("select2-hidden-accessible")) {
+
+       if (iframeWin.$) {
+
+           const $el = iframeWin.$(singleSelectEl);
+
+           // If option doesn't exist, create it
+           if ($el.find("option[value='" + value + "']").length === 0) {
+               const newOption = new iframeWin.Option(value, value, true, true);
+               $el.append(newOption);
+           }
+
+           $el.val(value).trigger("change");
+       }
+
+       if (typeof iframeWin.UpdateFieldArray === "function") {
+           iframeWin.UpdateFieldArray(fldid, rowNo, value, "parent", "");
+       }
+
+       return true;
+   }
+
+
+        /* ---------------- CHECKBOX ---------------- */
+
+        const checkboxEl = iframeDoc.querySelector(
+            `input[type="checkbox"]#${fldid}`
+        );
+
+        if (checkboxEl) {
+
+            const normalized = (value || "").toString().toLowerCase();
+
+            checkboxEl.checked =
+                normalized === "true" ||
+                normalized === "1" ||
+                normalized === "yes" ||
+                normalized === "t" ||
+                normalized === "y"; 
+
+
+            checkboxEl.dispatchEvent(new Event("change", { bubbles: true }));
+            checkboxEl.dispatchEvent(new Event("blur", { bubbles: true }));
+
+            return true;
+        }
+
+
+        /* ---------------- RADIO GROUP ---------------- */
+
+        const radioGroup = iframeDoc.querySelectorAll(
+            `input[type="radio"][name="${fldid}"]`
+        );
+
+        if (radioGroup.length > 0) {
+
+            radioGroup.forEach(r => {
+                r.checked = (r.value === value);
+            });
+
+            radioGroup[0].dispatchEvent(
+                new Event("change", { bubbles: true })
+            );
+
+            return true;
+        }
+
+
+        /* ---------------- NORMAL INPUT ---------------- */
+
+        const normalInput = iframeDoc.getElementById(fldid);
+
+        if (normalInput) {
+
+            normalInput.value = value;
+
+            normalInput.dispatchEvent(new Event("input", { bubbles: true }));
+            normalInput.dispatchEvent(new Event("change", { bubbles: true }));
+            normalInput.dispatchEvent(new Event("blur", { bubbles: true }));
+
+            return true;
+        }
+
+        return false;
+
+    } catch (ex) {
+        console.error("AxisetFieldValue error:", ex);
+        return false;
     }
+}
 
     function handleCreate({ tokens, commandConfig }) {
 
@@ -4571,7 +5174,34 @@
                 if (found) transId = found.name
                 else {
                     console.error("Invalid Tstruct name");
+                    showToast("Invalid Tstruct name please select the valid tstruct"); 
                     return;
+                }
+            }
+
+            const sourceName = commandConfig?.prompts?.[2]?.promptSource?.toLowerCase(); 
+            const sourceKey = `${sourceName}_${transId}`.toLowerCase(); 
+            const fieldsList = axDatasourceObj[sourceKey]; 
+
+            if (fieldsList) {
+                let startIndex = cleanCommandToken(tokens[2]).toLowerCase() === "with" ? 3: 2; 
+
+                for (let i = startIndex; i < tokens.length; i += 2) {
+                    let rawField =  cleanCommandToken(tokens[i]); 
+
+                    if (!rawField) continue; 
+
+                  const isValidField = colList.some(c => 
+                    (c.name && c.name.toLowerCase() === rawField.toLowerCase()) || 
+                    (c.caption && c.caption.toLowerCase() === rawField.toLowerCase()) || 
+                    (c.displaydata && c.displaydata.replace(/\s*\(.*?\)/g, '').trim().toLowerCase() === rawField.toLowerCase())
+                );
+
+                if (!isValidField) {
+                    console.error("Execution blocked: Invalid field name - "  + rawField);
+                    showToast(`'${rawField}' is not a valid field. Please select from the list.`, 5000, false);
+                    return;  
+                }
                 }
             }
 
@@ -4583,11 +5213,20 @@
         let rawName = cleanCommandToken(tokens[1]);
         let transId = tryResolveToken(1, rawName, commandConfig, false);
 
-        if (!transId || createfieldnamevaluesList.length == 0) {
-            console.log("Missing transaction ID or field values.");
-            showToast("Some required information is missing. Please re-enter the command and try again.");
-            return;
+        //if (!transId ) {
+        //    console.log("Missing transaction ID or field values.");
+        //    showToast("Some required information is missing. Please re-enter the command and try again.");
+        //    return;
+        //}
+
+        if (!transId || !createfieldnamevaluesList || !createfieldnamevaluesList[transId] || createfieldnamevaluesList[transId].length === 0) {
+            console.log("Missing transaction ID or field values. Tstructid : " + transId);
+            showToast("Incomplete command detected. Please clear the entire command and try again.");
+            return [];
         }
+
+
+        //commenetd bcz of set issue for a dependency field
 
         //let CurrentOpentstructName = getTransID();
 
@@ -4657,11 +5296,12 @@
                     setTimeout(function () {
                     try {
 
-                        console.log(createfieldnamevaluesList);
-                        //for (let j = 2; j < tokens.length; j += 2) {
-                        for (let j = 0; j < createfieldnamevaluesList.length; j++) {
+                        
+                        console.log(createfieldnamevaluesList[transId]);
+                       // for (let j = 2; j < tokens.length; j += 2) {
+                        for (let j = 0; j < createfieldnamevaluesList[transId].length; j++) {
 
-                            const item = createfieldnamevaluesList[j];
+                            const item = createfieldnamevaluesList[transId][j];
                             if (!item) continue;
 
                             const parts = item.split("=");
@@ -4701,25 +5341,28 @@
                     }
                     finally {
                         iframe.onload = null;
-                        createfieldnamevaluesList = [];
+                        ///comment bcz go option should work based on command not based on list so when we remove it but 
+                        //actual command / tokens exits these creates confusion and so many bugs(25-02 - 2026)
+                        //createfieldnamevaluesList = [];
                         }
-                    }, 100);
+                    }, 1000);
                 };
 
                 setEditSessionState(transId);
 
                 redirectToTstruct(transId);
 
-            }
-            catch (ex) {
-                console.log("Error in handleCreate: " + ex);
-                createfieldnamevaluesList = [];
-            }
-            //finally {
-            //    if (iframe) {
-            //        iframe.onload = iframe.onload;
-            //    }
-            //}
+        }
+        catch (ex) {
+            console.log("Error in handleCreate: " + ex);
+            showToast("Incomplete command detected. Please clear the entire command and try again.");
+            //createfieldnamevaluesList = [];
+        }
+        //finally {
+        //    if (iframe) {
+        //        iframe.onload = iframe.onload;
+        //    }
+        //}
 
 
         //}
@@ -5107,9 +5750,11 @@
         //        console.log("Fetched Session ID: " + sessionId);
 
         // 👉 Call preparePayload AFTER session is ready
-        if (!transid || saveListWithFieldNamendValues.length == 0) {
+
+        //if (!transid || saveListWithFieldNamendValues.length == 0) {
+        if (!transid || !saveListWithFieldNamendValues ||  !saveListWithFieldNamendValues[transid] || saveListWithFieldNamendValues[transid].length === 0) {
             console.log("Missing transaction ID or field values.");
-            showToast("Some required information is missing. Please re-enter the command and try again.");
+            showToast("Incomplete command detected. Please clear the entire command and try again.");
 
             return [];
         }
@@ -5130,7 +5775,7 @@
 
             keyfieldName = field.fname ?? field.keyfield ?? field.name ?? field.displaydata;
         }
-        preparePayload(saveListWithFieldNamendValues, transid, sourcename, isCreate, keyFieldValue, keyfieldName).then(result => {
+        preparePayload(saveListWithFieldNamendValues[transid] || [], transid, sourcename, isCreate, keyFieldValue, keyfieldName).then(result => {
 
             if (!result || !result.isSuccess) {
                 throw new Error("Payload is empty or invalid");
@@ -5196,8 +5841,8 @@
                         console.log("Data submitted successfully,Record-ID : " + recordId);
                         console.log(data);
 
-                        saveListWithFieldNamendValues = [];
-                        createfieldnamevaluesList = [];
+                        //saveListWithFieldNamendValues = [];
+                        //createfieldnamevaluesList = [];
                         return [];
                     }
 
@@ -5242,7 +5887,7 @@
                 axDatasourceObj[sourceKey]?.[0]?.password || null
             );
     }
-    function preparePayload(saveListWithFieldNamendValues,transid, sourcename, iscreate,inputKeyFieldValue,inputKeyFieldName) {
+    function preparePayload(saveListWithFieldNamendValueswithTransId , transid, sourcename, iscreate, inputKeyFieldValue, inputKeyFieldName) {
 
         let isSuccess = true;
         let payloadUsername = mainUserName;
@@ -5285,9 +5930,9 @@
                 keyvalue = inputKeyFieldValue;
             }
             try {
-                for (let i = 0; i < saveListWithFieldNamendValues.length; i++) {
+                for (let i = 0; i < saveListWithFieldNamendValueswithTransId.length; i++) {
 
-                    const item = saveListWithFieldNamendValues[i];
+                    const item = saveListWithFieldNamendValueswithTransId[i];
                     if (!item) continue;
 
                     const parts = item.split("=");
@@ -5533,7 +6178,7 @@
         }
         mode = "";
         cachedCommands = localStorage.getItem("axi_commands_v1");
-        commands = JSON.parse(cachedCommands);
+        initCommands(); 
         window.LoadIframe("loadhomepage");
         console.log(JSON.stringify(commands));
     }

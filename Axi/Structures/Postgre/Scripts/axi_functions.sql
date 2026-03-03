@@ -1,77 +1,4 @@
 <<
-CREATE OR REPLACE FUNCTION axi_firesql(
-    p_sql TEXT,
-    p_param_string TEXT
-)
-RETURNS JSON
-LANGUAGE plpgsql
-AS
-$$
-DECLARE
-    v_sql TEXT := p_sql;
-    v_pair TEXT;
-    v_pairs TEXT[];
-    v_param_name TEXT;
-    v_param_value TEXT;
-    v_final_sql TEXT;
-    v_result JSON;
-BEGIN
-    IF p_param_string IS NOT NULL
-       AND trim(p_param_string) <> ''
-       AND position(':' IN v_sql) > 0
-    THEN
-        v_pairs := string_to_array(p_param_string, ';');
-        FOREACH v_pair IN ARRAY v_pairs
-        LOOP
-            IF trim(v_pair) = '' THEN
-                CONTINUE;
-            END IF;
-            v_param_name  := trim(split_part(v_pair, '~', 1));
-            v_param_value := trim(split_part(v_pair, '~', 2));
-            IF v_param_name <> '' THEN
-                v_sql := replace(
-                            v_sql,
-                            ':' || v_param_name,
-                            quote_literal(v_param_value)
-                         );
-            END IF;
-        END LOOP;
-    END IF;
-    v_final_sql := '
-        SELECT json_build_object(
-            ''data'',
-            COALESCE(json_agg(row_data), ''[]''::json)
-        )
-        FROM (
-            SELECT row_id,
-                   json_object_agg(
-                       CASE 
-                           WHEN ordinality = 1 THEN ''displaydata''
-                           ELSE key
-                       END,
-                       COALESCE(value, '''')
-                       ORDER BY ordinality
-                   ) AS row_data
-            FROM (
-                SELECT 
-                    row_number() OVER () AS row_id,
-                    js
-                FROM (
-                    SELECT row_to_json(q) AS js
-                    FROM (' || v_sql || ') q
-                ) x
-            ) r,
-            LATERAL json_each_text(r.js) WITH ORDINALITY
-            GROUP BY row_id
-        ) s
-    ';
-    EXECUTE v_final_sql INTO v_result;
-    RETURN v_result;
-END;
-$$
->>
-
-<<
 CREATE OR REPLACE FUNCTION fn_axi_get_fieldvalues_with_keysuffix_list
 (
     p_tstruct text,
@@ -140,20 +67,26 @@ BEGIN
             p_fieldname
         );
     ELSE
-        v_sql := format(
-            'SELECT (%I || ''['' || %I || '']'')::text AS displaydata,
-                    %I::text AS id,
-                    %I::text AS caption
-             FROM %I
-             WHERE %I IS NOT NULL
-             ORDER BY displaydata ASC',
-            v_srcfld,
-            v_keyfield,
-            v_keyfield,
-            lower(v_srctf) || 'id',
-            lower(v_srctf),
-            p_fieldname
-        );
+           v_sql := format(
+			'SELECT (s.%I || ''['' || t.%I || '']'')::text AS displaydata,
+					s.%I::text AS id,
+					t.%I::text AS caption
+			 FROM %I s
+			 JOIN %I t ON s.%I = t.%I
+			 WHERE s.%I IS NOT NULL
+			 ORDER BY displaydata ASC',
+			v_srcfld,                -- s.source field
+			v_keyfield,              -- t.key field
+			lower(v_srctf) || 'id',  -- caption field 
+			v_keyfield,              -- id from key table -- caption field
+			lower(v_srctf),          -- main table
+			v_tablename,             -- key table
+			--lower(v_srctf) || 'id',  -- join column in main table
+			lower(v_srctf) || 'id',  -- join column in key table (adjust if different)
+			p_fieldname,
+			--p_fieldname              -- not null field from main table
+			v_srcfld
+		);
     END IF;
     RETURN QUERY EXECUTE v_sql; 
 END; 
@@ -176,12 +109,12 @@ BEGIN
     SELECT keyfield
     INTO v_keyfield
     FROM axp_tstructprops
-    WHERE name = p_tstruct
+    WHERE lower(name) = lower(p_tstruct)
     LIMIT 1;
     IF v_keyfield IS NULL then
         SELECT fname INTO v_keyfield
         FROM axpflds
-        WHERE tstruct = p_tstruct
+        WHERE lower(tstruct) = lower(p_tstruct)
           AND dcname = 'dc1'
         ORDER BY
             CASE 
@@ -205,8 +138,8 @@ BEGIN
   SELECT srckey, srcfld, srctf
   INTO v_sourcekey, v_srcfld, v_srctf
   FROM axpflds
-  WHERE tstruct = p_tstruct
-    AND fname   = p_fieldname;
+  WHERE lower(tstruct) = lower(p_tstruct)
+    AND lower(fname)   = lower(p_fieldname);
  IF v_keyfield IS NULL THEN
     RAISE EXCEPTION 'Key field could not be determined for tstruct %', p_tstruct;
 END IF;
@@ -221,6 +154,10 @@ IF v_sourcekey <> 'F' AND (v_srcfld IS NULL OR v_srctf IS NULL) THEN
     RAISE EXCEPTION 'Source table/field missing for field % in tstruct %',
         p_fieldname, p_tstruct;
 END IF;
+--Need to remove lowercase convertion , currently axpflds takes user entered mixed case
+--but db tables have lowercase fieldnames, this cuases issue with dynamic sql , so added lower()
+p_fieldname = lower(p_fieldname);
+v_keyfield = lower(v_keyfield);
 IF v_sourcekey = 'F' THEN
     v_sql := format(
     $sql$
@@ -239,6 +176,7 @@ IF v_sourcekey = 'F' THEN
     WHERE tstruct = %L
       AND lower(hidden) = 'f'
       AND lower(savevalue) = 't'
+	  AND lower(asgrid) = 'f'
     ORDER BY isfield ASC, displaydata ASC
     $sql$,
     p_fieldname,
@@ -265,6 +203,7 @@ ELSE
     WHERE tstruct = %L
       AND lower(hidden) = 'f'
       AND lower(savevalue) = 't'
+	  AND lower(asgrid) = 'f'
     ORDER BY isfield ASC, displaydata ASC
     $sql$,
     v_srcfld,
@@ -665,28 +604,32 @@ BEGIN
         'SELECT 
              ''0'' AS id,
              trim(value) AS displaydata
-         FROM unnest(string_to_array(' || quote_literal(p_fromlist) || ', '','')) AS value';
+         FROM unnest(string_to_array(' || quote_literal(p_fromlist) || ', '','')) AS value
+		 WHERE value IS NOT NULL
+           AND trim(value) <> ''''';
     ELSE        
         IF upper(coalesce(p_sourcekey,'F')) = 'T' THEN
 
             RETURN QUERY EXECUTE
             'SELECT 
                  col1::text AS id,
-                 col2::text AS displaydata
+                 trim(trailing ''.'' from trim(trailing ''0'' from col2::text)) AS displaydata
              FROM (
                  SELECT *
                  FROM (' || v_sql || ') q
-             ) sub(col1, col2)';        
+             ) sub(col1, col2) WHERE col2 IS NOT NULL
+               AND trim(col2::text) <> ''''';        
         ELSE
 
             RETURN QUERY EXECUTE
             'SELECT 
                  ''0'' AS id,
-                 col1::text AS displaydata
+                 trim(trailing ''.'' from trim(trailing ''0'' from col1::text)) AS displaydata
              FROM (
                  SELECT *
                  FROM (' || v_sql || ') q
-             ) sub(col1)';
+             ) sub(col1) WHERE col1 IS NOT NULL
+               AND trim(col1::text) <> ''''';
 
         END IF;
 

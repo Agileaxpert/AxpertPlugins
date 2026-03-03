@@ -3,7 +3,7 @@ CREATE TABLE axi_commands (
 	cmdtoken int4 NOT NULL,
 	command_group varchar(50) NOT NULL,
 	command varchar(50) NOT NULL,
-	
+	active varchar(1) NULL DEFAULT 'T'::character varying,
 	CONSTRAINT axi_commands_pkey PRIMARY KEY (cmdtoken)
 )
 >>
@@ -40,27 +40,27 @@ CREATE TABLE axp_tstructprops (
 --axi_commands starts here
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(1, 'create', '')
+INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(1, 'create', '', 'T')
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(2, 'edit', '')
+INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(2, 'edit', '', 'T')
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(3, 'view', '')
+INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(3, 'view', '', 'T')
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(4, 'configure', '')
+INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(4, 'configure', '', 'T')
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(5, 'upload', '')
+INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(5, 'upload', '', 'T')
 >>
 
 <<
-INSERT INTO axi_commands (cmdtoken, command_group, command) VALUES(6, 'download', '')
+INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(6, 'download', '', 'T')
 >>
 
 <<
@@ -68,7 +68,7 @@ INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(7, 'o
 >>
 
 --Not used now
--- INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(8, 'set', '', 'F')
+INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(8, 'set', '', 'F')
 
 <<
 INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(9, 'run', '', 'T')
@@ -78,26 +78,24 @@ INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(9, 'r
 INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(10, 'analyse', '', 'T')
 >>
 
-<<
+--Not used now; its been given as separate custom page
 INSERT INTO axi_commands (cmdtoken, command_group, command, active) VALUES(11, 'ai', '', 'T')
->>
+
 
 --axi_command_prompts starts here
 
 <<
-INSERT INTO axi_command_prompts (id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl) VALUES('b767f878-6f6f-4d72-8a52-f987d5dc9064'::uuid, 1, 2, 'tstruct name', 'Axi_TStructList', NULL, NULL, NULL, NULL, NULL)
+INSERT INTO axi_command_prompts (id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl) VALUES('b767f878-6f6f-4d72-8a52-f987d5dc9064'::uuid, 1, 2, 'tstruct name', 'axi_runtstructlist', NULL, NULL, NULL, NULL, NULL)
 >>
 
-<<
+--create with values removed now, need improvement in logic, since dependencies failed
 INSERT INTO axi_command_prompts (id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl) VALUES('b678f938-6f7f-4d72-8a78-f987d5dc8780'::uuid, 1, 3, 'with values', '', '', 'with', NULL, NULL, NULL)
->>
 
-<<
 INSERT INTO axi_command_prompts (id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl) VALUES('b767f938-6f7f-4d72-8a78-f987d5dc9678'::uuid, 1, 4, 'field name', 'Axi_FieldList', '2', NULL, NULL, NULL, NULL)
->>
+
 
 <<
-INSERT INTO axi_command_prompts (id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl) VALUES('8faae04b-af25-4be7-b97c-de72815255f4'::uuid, 2, 2, 'tstruct name', 'Axi_TStructList', NULL, NULL, NULL, NULL, NULL)
+INSERT INTO axi_command_prompts (id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl) VALUES('8faae04b-af25-4be7-b97c-de72815255f4'::uuid, 2, 2, 'tstruct name', 'axi_runtstructlist', NULL, NULL, NULL, NULL, NULL)
 >>
 
 <<
@@ -113,7 +111,7 @@ INSERT INTO axi_command_prompts (id, cmdtoken, wordpos, prompt, promptsource, pr
 >>
 
 <<
-INSERT INTO axi_command_prompts (id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl) VALUES('b878f939-6f7f-4d72-8a78-f912d5dc9669'::uuid, 2, 6, 'field name', 'Axi_FieldList', '2', NULL, NULL, NULL, NULL)
+INSERT INTO axi_command_prompts (id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl) VALUES('b878f939-6f7f-4d72-8a78-f912d5dc9669'::uuid, 2, 6, 'field name', 'axi_nongridfieldlist', '2', NULL, NULL, NULL, NULL)
 >>
 
 <<
@@ -129,15 +127,25 @@ INSERT INTO axi_command_prompts (id, cmdtoken, wordpos, prompt, promptsource, pr
 >>
 
 <<
+INSERT INTO axi_command_prompts
+(id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl)
+VALUES('10655119-ba93-42e8-8aef-0aefccae5a80'::uuid, 4, 2, 'object type', '', NULL, 'peg,formnotification,schedulednotification,pegformnotification,job,api,rule,properties,permission,access,server,keyfield,newsandannouncement,settings', NULL, NULL, NULL)
+>>
+
+--updated on 25022026
 INSERT INTO axi_command_prompts (id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl) VALUES('10655119-ba93-42e8-8aef-0aefccae5a80'::uuid, 4, 2, 'object type', '', NULL, 'peg,formnotification,schdulednotification,pegformnotification,job,printform,api,rule,properties,permission,access,server,keyfield', NULL, NULL, NULL)
->>
 
 <<
+INSERT INTO axi_command_prompts
+(id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl)
+VALUES('0f99d918-0caa-4523-9260-f18b5bd162bf'::uuid, 4, 3, 'object name', 'Axi_PegList,Axi_FormNotifyList,Axi_ScheduleNotifyList,Axi_PEGNotifyList,Axi_JobNamesList,Axi_APINamesList,Axi_RuleNamesList,Axi_Dummy,axi_userlist,axi_rolelist,Axi_ServernameList,axi_runtstructlist', NULL, '', NULL, NULL, NULL)
+>>
+
+--updated on 25022026
 INSERT INTO axi_command_prompts (id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl) VALUES('0f99d918-0caa-4523-9260-f18b5bd162bf'::uuid, 4, 3, 'object name', 'Axi_PegList,Axi_FormNotifyList,Axi_ScheduleNotifyList,Axi_PEGNotifyList,Axi_JobNamesList,Axi_PrintFormList,Axi_APINamesList,Axi_RuleNamesList,Axi_Dummy,axi_userlist,axi_rolelist,Axi_ServernameList,Axi_TStructList', NULL, '', NULL, NULL, NULL)
->>
 
 <<
-INSERT INTO axi_command_prompts (id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl) VALUES('0f67d918-0caa-4523-9260-f18b5bd982fb'::uuid, 4, 4, 'key field', 'Axi_FieldList', '3', '', NULL, NULL, NULL)
+INSERT INTO axi_command_prompts (id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl) VALUES('0f67d918-0caa-4523-9260-f18b5bd982fb'::uuid, 4, 4, 'key field', 'axi_primaryfieldlist', '3', '', NULL, NULL, NULL)
 >>
 
 <<

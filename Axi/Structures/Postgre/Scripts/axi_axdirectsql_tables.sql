@@ -11,7 +11,7 @@ CREATE TABLE axdirectsql (
 	wkid varchar(15) NULL,
 	app_level numeric(3) NULL,
 	app_desc numeric(1) NULL,
-	app_slevel numericinstall(3) NULL,
+	app_slevel numeric(3) NULL,
 	cancelremarks varchar(150) NULL,
 	wfroles varchar(250) NULL,
 	sqlname varchar(50) NULL,
@@ -174,8 +174,13 @@ INSERT INTO axdirectsql (axdirectsqlid, cancel, sourceid, mapname, username, mod
 INSERT INTO axdirectsql (axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqlsrc, sqlsrccnd, sqltext, paramcal, sqlparams, accessstring, groupname, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc) VALUES(99999999990021, 'F', 0, NULL, 'admin', '2025-12-23 13:35:16.000', 'admin', '2025-12-22 16:01:14.000', NULL, 1, 1, NULL, NULL, NULL, 'axi_keyfieldlist', NULL, 'General', 5, 'SELECT keyfield FROM (SELECT keyfield, 1 AS priority, NULL AS modeofentry, NULL AS allowduplicate, NULL AS datatype, NULL AS ordno FROM axp_tstructprops WHERE name = :param1 UNION ALL SELECT fname AS keyfield, 2 AS priority, modeofentry, allowduplicate, datatype, ordno FROM axpflds WHERE tstruct = :param1 and dcname = ''dc1'' AND (modeofentry = ''autogenerate'' OR ((LOWER(allowduplicate) = ''f'' OR datatype = ''c'') AND LOWER(hidden) = ''f''))) t ORDER BY priority, CASE WHEN modeofentry = ''autogenerate'' THEN 1 WHEN LOWER(allowduplicate) = ''f'' THEN 2 WHEN datatype = ''c'' THEN 3 ELSE 4 END, ordno ASC LIMIT 1', 'param1', 'param1', 'ALL', NULL, NULL, 'F', '6 Hr', NULL, NULL)
 >>
 
-<<
+--old query
 INSERT INTO axdirectsql (axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqlsrc, sqlsrccnd, sqltext, paramcal, sqlparams, accessstring, groupname, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc) VALUES(99999999990022, 'F', 0, NULL, 'admin', '2025-12-23 13:22:07.000', 'admin', '2025-12-19 16:06:57.000', NULL, 1, 1, NULL, NULL, NULL, 'axi_viewlist', NULL, 'General', 5, 'select * from (select caption||'' (''||name||'')'' || '' [tstruct]'' displaydata , caption, name from tstructs union select caption||'' (''||name||'')'' || '' [iview]'' displaydata, caption, name from iviews union select caption|| '' [page]'' as displaydata ,caption, props name from axpages where pagetype = ''web'' and (props is not null and props <> '''') union select sqlname||'' (''||sqlsrc||'')'' || '' [ads]'' displaydata, sqlsrc caption, sqlname name from axdirectsql union select ''Inbox'' displaydata,''Inbox'' caption,''Inbox'' name from dual) src order by displaydata asc', NULL, NULL, 'ALL', NULL, NULL, 'F', '6 Hr', NULL, NULL)
+
+<<
+INSERT INTO axdirectsql
+(axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqlsrc, sqlsrccnd, sqltext, paramcal, sqlparams, accessstring, groupname, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
+VALUES(99999999990022, 'F', 0, NULL, 'admin', '2025-12-23 13:22:07.000', 'admin', '2025-12-19 16:06:57.000', NULL, 1, 1, NULL, NULL, NULL, 'axi_viewlist', NULL, 'Application', 5, 'select * from (select a.caption||'' (''||a.name||'')'' || '' [tstruct]'' displaydata , a.caption, a.name from tstructs a,axpages b where b.visible = ''T'' and b.pagetype = ''t''||a.name union select a.caption||'' (''||a.name||'')'' || '' [iview]'' displaydata, a.caption, a.name from iviews a,axpages b where b.visible = ''T'' and b.pagetype = ''i''||a.name union select caption|| '' [page]'' as displaydata ,caption, props name from axpages where pagetype = ''web'' and (props is not null and props <> '''') and visible = ''T'' union SELECT sqlname || '' ('' || sqlsrc || '') [ads]'' AS displaydata,sqlsrc AS caption,sqlname AS name FROM axdirectsql a WHERE EXISTS (SELECT 1 FROM axdirectsql_metadata m WHERE m.axdirectsqlid = a.axdirectsqlid) union select ''Inbox'' displaydata,''Inbox'' caption,''Inbox'' name from dual) src order by displaydata asc', NULL, NULL, 'ALL', NULL, NULL, 'F', '6 Hr', NULL, NULL, NULL);
 >>
 
 <<
@@ -203,8 +208,9 @@ INSERT INTO axdirectsql (axdirectsqlid, cancel, sourceid, mapname, username, mod
 >>
 
 <<
-INSERT INTO axdirectsql (axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqlsrc, sqlsrccnd, sqltext, paramcal, sqlparams, accessstring, groupname, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
-VALUES(99999999990029, 'F', 0, NULL, 'admin', '2025-12-23 13:35:16.000', 'admin', '2025-12-22 16:01:14.000', NULL, 1, 1, NULL, NULL, NULL, 'axi_fieldlist', NULL, 'Application', 5, 'select caption||'' (''||fname||'')'' displaydata, caption, fname name, tstruct,substring(modeofentry,1,1) moe,"datatype",fldsql,dcname,asgrid,listvalues fromlist,srckey normalized from axpflds where tstruct = :param1 and dcname = ''dc1'' and hidden = ''F'' and modeofentry in (''accept'',''select'')and savevalue = ''T'' and "datatype" <> ''i'' order by ordno asc', 'param1', 'param1', 'ALL', NULL, NULL, 'F', '6 Hr', NULL, NULL, NULL)
+INSERT INTO axdirectsql
+(axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqlsrc, sqlsrccnd, sqltext, paramcal, sqlparams, accessstring, groupname, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
+VALUES(99999999990029, 'F', 0, NULL, 'admin', '2025-12-23 13:35:16.000', 'admin', '2025-12-22 16:01:14.000', NULL, 1, 1, NULL, NULL, NULL, 'axi_fieldlist', NULL, 'Application', 5, 'select caption||'' (''||fname||'')'' displaydata, caption, fname name, tstruct,substring(modeofentry,1,1) moe,"datatype",fldsql,dcname,asgrid,listvalues fromlist,srckey normalized from axpflds where tstruct = :param1 and dcname = ''dc1'' and hidden = ''F'' and readonly = ''F'' and modeofentry in (''accept'',''select'')and savevalue = ''T'' and "datatype" <> ''i'' order by ordno asc', 'param1', 'param1', 'ALL', NULL, NULL, 'F', '6 Hr', NULL, NULL, NULL)
 >>
 
 <<
@@ -228,4 +234,22 @@ VALUES(99999999990033, 'F', 0, NULL, 'admin', '2025-12-23 20:50:43.000', 'admin'
 INSERT INTO axdirectsql
 (axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqlsrc, sqlsrccnd, sqltext, paramcal, sqlparams, accessstring, groupname, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
 VALUES(99999999990034, 'F', 0, NULL, 'admin', '2025-12-23 13:22:07.000', 'admin', '2025-12-19 16:06:57.000', NULL, 1, 1, NULL, NULL, NULL, 'axi_userpwd', NULL, 'Application', 5, 'select password  from axusers where username = :param1', 'param1', 'param1', 'ALL', NULL, NULL, 'F', '6 Hr', NULL, NULL, NULL);
+>>
+
+<<
+INSERT INTO axdirectsql
+(axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqltext, paramcal, sqlparams, accessstring, groupname, sqlsrc, sqlsrccnd, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
+VALUES(99999999990035, 'F', 0, NULL, 'admin', '2025-12-23 13:35:16.000', 'admin', '2025-12-22 16:01:14.000', NULL, 1, 1, NULL, NULL, NULL, 'axi_primaryfieldlist', NULL, 'SELECT caption||'' (''||fname||'')'' displaydata, caption, fname name FROM axpflds WHERE tstruct = :param1 and dcname = ''dc1'' AND (modeofentry = ''autogenerate'' OR ((LOWER(allowduplicate) = ''f'' OR datatype = ''c'') AND LOWER(hidden) = ''f'')) order by ordno asc', 'param1', 'param1', 'ALL', NULL, 'Application', 5, NULL, 'F', '6 Hr', NULL, NULL, NULL)
+>>
+
+<<
+INSERT INTO axdirectsql
+(axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqltext, paramcal, sqlparams, accessstring, groupname, sqlsrc, sqlsrccnd, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
+VALUES(99999999990036, 'F', 0, NULL, 'admin', '2025-12-23 13:22:07.000', 'admin', '2025-12-19 16:06:57.000', NULL, 1, 1, NULL, NULL, NULL, 'axi_runtstructlist', NULL, 'select a.caption||'' (''||a.name||'')'' displaydata, a.caption, a.name from tstructs a, axpages b where b.visible = ''T'' and pagetype = ''t''||a.name', NULL, NULL, 'ALL', NULL, 'Application', 5, NULL, 'F', '6 Hr', NULL, NULL, NULL)
+>>
+
+<<
+INSERT INTO axdirectsql
+(axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqltext, paramcal, sqlparams, accessstring, groupname, sqlsrc, sqlsrccnd, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
+VALUES(99999999990037, 'F', 0, NULL, 'admin', '2025-12-23 13:35:16.000', 'admin', '2025-12-22 16:01:14.000', NULL, 1, 1, NULL, NULL, NULL, 'axi_nongridfieldlist', NULL, 'select caption||'' (''||fname||'')'' displaydata, caption, fname name, tstruct,substring(modeofentry,1,1) moe,"datatype",fldsql,dcname,asgrid,listvalues fromlist,srckey normalized from axpflds where tstruct = :param1 and asgrid = ''F'' and hidden = ''F'' and modeofentry in (''accept'',''select'')and savevalue = ''T'' and "datatype" <> ''i'' order by ordno asc', 'param1', 'param1', 'ALL', NULL, 'Application', 5, NULL, 'F', '6 Hr', NULL, NULL, NULL)
 >>
