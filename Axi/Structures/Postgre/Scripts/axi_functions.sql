@@ -1,4 +1,61 @@
 <<
+drop function fn_axi_get_fieldvalues_with_keysuffix_list
+>>
+
+<<
+drop function fn_axi_getkeyvalueswithfieldnameslist
+>>
+
+<<
+drop function fn_upsert_config_by_condition
+>>
+
+<<
+drop function get_ads_dropdown_data
+>>
+
+<<
+drop function get_dynamic_field
+>>
+
+<<
+drop function populate_axdirectsql_metadata
+>>
+
+<<
+drop function fn_axi_metadata
+>>
+
+<<
+drop function fn_axi_struct_metadata
+>>
+
+<<
+drop function axi_firesql_v2
+>>
+
+<<
+drop function axi_fn_getstructlist
+>>
+
+<<
+drop function axi_fn_getaxobjectlist
+>>
+
+<<
+drop function fn_axi_getstructures_meta
+>>
+
+<<
+drop function fn_axi_getkeyvalueswithfieldnameslist_v2
+>>
+
+<<
+drop function fn_axi_get_fieldvalues_with_keysuffix_list_v2
+>>
+
+
+<<
 CREATE OR REPLACE FUNCTION fn_axi_get_fieldvalues_with_keysuffix_list
 (
     p_tstruct text,
@@ -636,5 +693,307 @@ BEGIN
     END IF;
 
 END;
-$$;
+$$
 >>
+
+<<
+CREATE OR REPLACE FUNCTION axi_fn_getstructlist(
+    p_roles text,
+    p_mode text,
+    p_structtype text
+)
+RETURNS TABLE (
+    displaydata text,
+    caption text,
+    name text
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_roles text[];
+BEGIN
+    v_roles := string_to_array(p_roles, ',');
+
+    IF lower(p_structtype) = 'i' THEN
+        RETURN QUERY
+        SELECT DISTINCT
+               (a.caption || ' (' || a.name || ')')::text,
+               a.caption::text,
+               a.name::text
+        FROM iviews a
+        JOIN axpages b ON b.pagetype = 'i' || a.name
+        LEFT JOIN axuseraccess ua ON ua.sname = a.name
+        WHERE (lower(p_mode) = 'dev' OR b.visible = 'T')
+          AND (
+                'default' = ANY(v_roles)
+                OR (ua.stype = 'i' AND ua.rname = ANY(v_roles))
+              )
+        ORDER BY 2;
+
+    ELSE
+        RETURN QUERY
+        SELECT DISTINCT
+               (a.caption || ' (' || a.name || ')')::text,
+               a.caption::text,
+               a.name::text
+        FROM tstructs a
+        JOIN axpages b ON b.pagetype = 't' || a.name
+        LEFT JOIN axuseraccess ua ON ua.sname = a.name
+        WHERE (lower(p_mode) = 'dev' OR b.visible = 'T')
+          AND (
+                'default' = ANY(v_roles)
+                OR (ua.stype = 't' AND ua.rname = ANY(v_roles))
+              )
+        ORDER BY 2;
+    END IF;
+
+END;
+$$
+>>
+
+
+<<
+CREATE OR REPLACE FUNCTION axi_fn_getaxobjectlist(p_userroles text)
+RETURNS TABLE (
+    displaydata text,
+    caption text,
+    name text
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_roles text[];
+BEGIN
+    v_roles := string_to_array(p_userroles, ',');
+
+    RETURN QUERY
+    SELECT *
+    FROM (
+
+        -- TSTRUCT
+        SELECT DISTINCT
+               (a.caption || ' (' || a.name || ') [tstruct]')::text AS displaydata,
+               a.caption::text AS caption,
+               a.name::text AS name
+        FROM tstructs a
+        JOIN axpages b
+             ON b.pagetype = 't' || a.name
+        LEFT JOIN axuseraccess ua
+             ON ua.sname = a.name
+        WHERE b.visible = 'T'
+          AND (
+                'default' = ANY(v_roles)
+                OR (ua.stype = 't' AND ua.rname = ANY(v_roles))
+              )
+
+        UNION
+
+        -- IVIEW
+        SELECT DISTINCT
+               (a.caption || ' (' || a.name || ') [iview]')::text displaydata,
+               a.caption::text caption,
+               a.name::text name
+        FROM iviews a
+        JOIN axpages b
+             ON b.pagetype = 'i' || a.name
+        LEFT JOIN axuseraccess ua
+             ON ua.sname = a.name
+        WHERE b.visible = 'T'
+          AND (
+                'default' = ANY(v_roles)
+                OR (ua.stype = 'i' AND ua.rname = ANY(v_roles))
+              )
+
+        UNION
+
+        -- PAGE
+        SELECT DISTINCT
+               (p.caption || ' [page]')::text displaydata,
+               p.caption::text caption,
+               p.props::text name
+        FROM axpages p
+        LEFT JOIN axuseraccess ua
+             ON ua.sname = p.props
+        WHERE p.pagetype = 'web'
+          AND p.visible = 'T'
+          AND p.props IS NOT NULL
+          AND p.props <> ''
+          AND (
+                'default' = ANY(v_roles)
+                OR (ua.stype = 'p' AND ua.rname = ANY(v_roles))
+              )
+
+        UNION
+
+        -- ADS (no role check)
+        SELECT
+               (a.sqlname || ' (' || a.sqlsrc || ') [ads]')::text displaydata,
+               a.sqlsrc::text caption,
+               a.sqlname::text name
+        FROM axdirectsql a
+        WHERE EXISTS (
+                SELECT 1
+                FROM axdirectsql_metadata m
+                WHERE m.axdirectsqlid = a.axdirectsqlid
+              )
+
+        UNION
+
+        -- Inbox
+        SELECT
+               'Inbox'::text displaydata,
+               'Inbox'::text caption,
+               'Inbox'::text name
+
+    ) src
+    ORDER BY displaydata;
+
+END;
+$$
+>>
+
+
+--fn_axi_getstructures_meta with userpermission meta data
+<<
+CREATE OR REPLACE FUNCTION fn_axi_getstructures_meta(pusername character varying, puserrole character varying, presponsiblity character varying, pmode character varying, pstype character varying)
+ RETURNS TABLE(displaydata character varying, caption character varying, name character varying, stype character varying, dimension character varying, permission character varying, createallowed character varying)
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+
+if pstype='t' then
+    RETURN QUERY
+SELECT DISTINCT
+               (a.caption || ' (' || a.name || ') [tstruct]')::varchar,
+               a.caption,
+               a.name,'t'::varchar stype,coalesce(g.dimensions,'F')::varchar dimensions,coalesce(p.permissions,'F')::varchar,coalesce(p.newrecord,'T')::varchar
+        FROM tstructs a
+        left JOIN axpages b ON b.pagetype = 't' || a.name
+        LEFT JOIN axuseraccess ua ON ua.sname = a.name
+        left join (select ftransid,'T' dimensions from axgrouptstructs)g on a."name" = g.ftransid
+        left join (SELECT DISTINCT ON (formtransid) 
+    formtransid, 
+    newrecord, 
+    permissions
+FROM (
+    SELECT formtransid, case when allowcreate='Yes' then 'T' else 'F' end newrecord, 'U' as type, 1 as ord ,'T'permissions
+    FROM axpermissions
+    WHERE axusername = pusername AND comptype = 'Form'
+    UNION ALL
+    SELECT formtransid, case when allowcreate='Yes' then 'T' else 'F' end newrecord, 'R' as type, 2 as ord ,'T' permissions
+    FROM axpermissions
+    WHERE axuserrole = ANY(string_to_array(puserrole, ',')) and	 comptype = 'Form'
+) combined_permissions
+ORDER BY formtransid, ord ASC)p on a.name=p.formtransid
+        WHERE (pmode = 'dev' OR b.visible = 'T')
+          AND (
+                'default' = ANY(string_to_array(presponsiblity,','))
+                OR (ua.stype = 't' AND ua.rname = ANY(string_to_array(presponsiblity,','))
+              )); 
+
+elsif pstype='i' then
+  RETURN QUERY
+SELECT DISTINCT
+               (a.caption || ' (' || a.name || ') [iview]')::varchar,
+               a.caption,
+               a.name,'i'::varchar stype,null::varchar,null::varchar,null::varchar
+        FROM iviews a
+        left JOIN axpages b ON b.pagetype = 'i' || a.name
+        LEFT JOIN axuseraccess ua ON ua.sname = a.name     
+        WHERE (lower(pmode) = 'dev' OR b.visible = 'T')
+          AND (
+                'default' = ANY(string_to_array(presponsiblity,','))
+                OR (ua.stype = 't' AND ua.rname = ANY(string_to_array(presponsiblity,','))
+              ));
+elsif pstype='p' then
+  RETURN QUERY
+ SELECT DISTINCT
+               (b.caption || ' [page]')::varchar,
+               b.caption,
+               b.name,'p'::varchar stype,null::varchar,null::varchar,null::varchar
+        FROM  axpages b 
+        JOIN axuseraccess ua ON ua.sname = b.name     
+        WHERE b.pagetype='web'
+        and (lower(pmode) = 'dev' OR b.visible = 'T')
+          AND (
+                'default' = ANY(string_to_array(presponsiblity,','))
+                OR (ua.rname = ANY(string_to_array(presponsiblity,','))
+              )); 
+
+elsif pstype='ads' then
+  RETURN QUERY
+select (a.sqlname || ' (' || a.sqlsrc || ') [ads]')::varchar,sqlname,sqlname,'ads'::varchar,'F'::varchar,'T'::varchar,
+null::varchar from axdirectsql a
+join axpermissions a2 on a.sqlname =a2.formcap 
+where (a2.axusername = pusername or a2.axuserrole = ANY(string_to_array(puserrole,',')));
+elsif pstype='all' then
+
+return query
+SELECT DISTINCT
+               (a.caption || ' (' || a.name || ') [tstruct]')::varchar,
+               a.caption,
+               a.name,'t'::varchar stype,coalesce(g.dimensions,'F')::varchar dimensions,coalesce(p.permissions,'F')::varchar,coalesce(p.newrecord,'T')::varchar
+        FROM tstructs a
+        left JOIN axpages b ON b.pagetype = 't' || a.name
+        LEFT JOIN axuseraccess ua ON ua.sname = a.name
+        left join (select ftransid,'T' dimensions from axgrouptstructs)g on a."name" = g.ftransid
+        left join (SELECT DISTINCT ON (formtransid) 
+    formtransid, 
+    newrecord, 
+    permissions
+FROM (
+    SELECT formtransid, case when allowcreate='Yes' then 'T' else 'F' end newrecord, 'U' as type, 1 as ord ,'T'permissions
+    FROM axpermissions
+    WHERE axusername = pusername AND comptype = 'Form'
+    UNION ALL
+    SELECT formtransid, case when allowcreate='Yes' then 'T' else 'F' end newrecord, 'R' as type, 2 as ord ,'T' permissions
+    FROM axpermissions
+    WHERE axuserrole = ANY(string_to_array(puserrole, ',')) and	 comptype = 'Form'
+) combined_permissions
+ORDER BY formtransid, ord ASC)p on a.name=p.formtransid
+        WHERE (pmode = 'dev' OR b.visible = 'T')
+          AND (
+                'default' = ANY(string_to_array(presponsiblity,','))
+                OR (ua.stype = 't' AND ua.rname = ANY(string_to_array(presponsiblity,','))
+              ))
+union all
+SELECT DISTINCT
+               (a.caption || ' (' || a.name || ') [iview]')::varchar,
+               a.caption,
+               a.name,'i'::varchar,null dimensions,null,null
+        FROM iviews a
+        left JOIN axpages b ON b.pagetype = 'i' || a.name
+        LEFT JOIN axuseraccess ua ON ua.sname = a.name     
+        WHERE (lower(pmode) = 'dev' OR b.visible = 'T')
+          AND (
+                'default' = ANY(string_to_array(presponsiblity,','))
+                OR (ua.stype = 't' AND ua.rname = ANY(string_to_array(presponsiblity,','))
+              ))
+union all
+SELECT DISTINCT
+               (b.caption || ' [page]')::varchar,
+               b.caption,
+               b.name,'p'::varchar,null dimensions,null,null
+        FROM  axpages b 
+        JOIN axuseraccess ua ON ua.sname = b.name     
+        WHERE b.pagetype='web'
+        and (lower(pmode) = 'dev' OR b.visible = 'T')
+          AND (
+                'default' = ANY(string_to_array(presponsiblity,','))
+                OR (ua.rname = ANY(string_to_array(presponsiblity,','))
+              ))
+union all
+select (a.sqlname || ' (' || a.sqlsrc || ') [ads]'),sqlname,sqlname,'ads'::varchar,'F'::varchar,'T'::varchar,null from axdirectsql a
+join axpermissions a2 on a.sqlname =a2.formcap 
+where (a2.axusername = pusername or a2.axuserrole = ANY(string_to_array(puserrole,',')))
+union all
+SELECT
+               'Inbox'::varchar displaydata,
+               'Inbox'::varchar caption,
+               'Inbox'::varchar name,'Inbox'::varchar stype,null,null,null;
+end if;
+ 
+END;
+$function$
+>>
+
