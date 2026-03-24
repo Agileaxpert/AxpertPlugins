@@ -50,6 +50,10 @@ drop function fn_axi_getstructures_meta
 drop function fn_permissions_getpermission
 >>
 
+<<
+drop function fn_axi_getstructs_obj
+>>
+
 
 <<
 CREATE OR REPLACE FUNCTION fn_axi_get_fieldvalues_with_keysuffix_list
@@ -852,7 +856,7 @@ $$
 
 <<
 CREATE OR REPLACE FUNCTION fn_permissions_getpermission(pmode character varying, ptransid character varying, pusername character varying, proles character varying DEFAULT 'All'::character varying, pglobalvars character varying DEFAULT 'NA'::character varying)
- RETURNS TABLE(transid character varying, fullcontrol character varying, userrole character varying, allowcreate character varying, view_access character varying, view_includedc character varying, view_excludedc character varying, view_includeflds character varying, view_excludeflds character varying, edit_access character varying, edit_includedc character varying, edit_excludedc character varying, edit_includeflds character varying, edit_excludeflds character varying, maskedflds character varying, filtercnd text, encryptedflds character varying, permissiontype character varying, viewctrl character varying, editctrl character varying)
+ RETURNS TABLE(transid character varying, fullcontrol character varying, userrole character varying, allowcreate character varying, view_access character varying, view_includedc character varying, view_excludedc character varying, view_includeflds character varying, view_excludeflds character varying, edit_access character varying, edit_includedc character varying, edit_excludedc character varying, edit_includeflds character varying, edit_excludeflds character varying, maskedflds character varying, filtercnd text, encryptedflds character varying, permissiontype character varying)
  LANGUAGE plpgsql
 AS $function$
 declare 
@@ -1022,8 +1026,6 @@ view_includeflds := null;
 view_includedc :=null;
 allowcreate := null;
 filtercnd := case when v_applypermissions > 0 then array_to_string(v_final_conditions,' and ') else null end;
-viewctrl := '0';
-editctrl :='0';
 select string_agg(fname,',') into encryptedflds  from axpflds where tstruct=rec_transid.transid and encrypted='T';	
 	
 return next;
@@ -1034,7 +1036,7 @@ for rec in execute rolesql
 loop	
 		transid := rec_transid.transid;
 		userrole := rec.axuserrole;
-		select string_agg(dname,',') into view_includedc  from axpdc where tstruct=rec_transid.transid and exists (select 1 from unnest(string_to_array( concat('dc1,',rec.view_includedflds),',')) val where val = dname);
+		select string_agg(dname,',') into view_includedc  from axpdc where tstruct=rec_transid.transid and exists (select 1 from unnest(string_to_array( rec.view_includedflds,',')) val where val = dname);
 		select string_agg(dname,',') into view_excludedc  from axpdc where tstruct=rec_transid.transid and exists (select 1 from unnest(string_to_array( rec.view_excludedflds,',')) val where val = dname);		 
 		select string_agg(fname,',') into view_includeflds  from axpflds where tstruct=rec_transid.transid and savevalue='T' and exists (select 1 from unnest(string_to_array( rec.view_includedflds,',')) val where val = fname);
 		select string_agg(fname,',') into view_excludeflds  from axpflds where tstruct=rec_transid.transid and savevalue='T' and exists (select 1 from unnest(string_to_array( rec.view_excludedflds,',')) val where val = fname);
@@ -1043,18 +1045,15 @@ loop
 		select string_agg(fname,',') into edit_includeflds  from axpflds where tstruct=rec_transid.transid and savevalue='T' and exists (select 1 from unnest(string_to_array( rec.edit_includedflds,',')) val where val = fname);
 		select string_agg(fname,',') into edit_excludeflds  from axpflds where tstruct=rec_transid.transid and savevalue='T' and exists (select 1 from unnest(string_to_array( rec.edit_excludedflds,',')) val where val = fname);
 		maskedflds := rec.fieldmaskstr;				
-		view_access := case when rec.viewctrl='4' then 'None' else null end;
+		view_access := case when rec.editctrl='0' then null else case when rec.viewctrl='4' then 'None' else null end end;
 		edit_access := case when rec.editctrl='4' then 'None' else null end;
 		view_includeflds := case when rec.viewctrl='0' then view_includeflds else concat(view_includeflds,',',edit_includeflds) end;		
 		view_includedc :=case when rec.viewctrl='0' then view_includedc else  concat(view_includedc,',',edit_includedc) end;
 		allowcreate := rec.allowcreate;
-		--filtercnd := rec.cnd;
-filtercnd := array_to_string(v_final_conditions,' and ');
+		filtercnd := rec.cnd;
 		select string_agg(fname,',') into encryptedflds  from axpflds  where tstruct=rec_transid.transid and encrypted='T' and exists (select 1 from unnest(string_to_array(view_includeflds,',')) val where val = fname);
 		fullcontrol:= null;
 		permissiontype := rec.permissiontype;
-viewctrl := rec.viewctrl;
-editctrl :=rec.editctrl;
 		return next;
 
 end loop;
@@ -1139,7 +1138,7 @@ elsif pstype='i' then
 SELECT DISTINCT
                (a.caption || ' (' || a.name || ') [iview]')::varchar,
                a.caption,
-               a.name,'i'::varchar stype,null::varchar,null::varchar,null::varchar,null::varchar,null::varchar,null::varchar
+               a.name,'i'::varchar stype,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar
         FROM iviews a
         left JOIN axpages b ON b.pagetype = 'i' || a.name
         LEFT JOIN axuseraccess ua ON ua.sname = a.name     
@@ -1153,7 +1152,7 @@ elsif pstype='p' then
  SELECT DISTINCT
                (b.caption || ' [page]')::varchar,
                b.caption,
-               b.name,'p'::varchar stype,null::varchar,null::varchar,null::varchar,null::varchar,null::varchar,null::varchar
+               b.name,'p'::varchar stype,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar
         FROM  axpages b 
         JOIN axuseraccess ua ON ua.sname = b.name     
         WHERE b.pagetype='web'
@@ -1166,7 +1165,7 @@ elsif pstype='p' then
 elsif pstype='ads' then
   RETURN QUERY
 select (a.sqlname || ' (' || a.sqlsrc || ') [ads]')::varchar,sqlname,sqlname,'ads'::varchar,'F'::varchar,'T'::varchar,
-null::varchar,null::varchar,null::varchar,null::varchar 
+'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar 
 from axdirectsql a
 join axpermissions a2 on a.sqlname =a2.formcap 
 where (a2.axusername = pusername or a2.axuserrole = ANY(string_to_array(puserrole,',')));
@@ -1231,7 +1230,7 @@ union all
 SELECT DISTINCT
                (a.caption || ' (' || a.name || ') [iview]')::varchar,
                a.caption,
-               a.name,'i'::varchar stype,null::varchar,null::varchar,null::varchar,null::varchar,null::varchar,null::varchar
+               a.name,'i'::varchar stype,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar
         FROM iviews a
         left JOIN axpages b ON b.pagetype = 'i' || a.name
         LEFT JOIN axuseraccess ua ON ua.sname = a.name     
@@ -1244,7 +1243,7 @@ union all
  SELECT DISTINCT
                (b.caption || ' [page]')::varchar,
                b.caption,
-               b.name,'p'::varchar stype,null::varchar,null::varchar,null::varchar,null::varchar,null::varchar,null::varchar
+               b.name,'p'::varchar stype,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar
         FROM  axpages b 
         JOIN axuseraccess ua ON ua.sname = b.name     
         WHERE b.pagetype='web'
@@ -1255,7 +1254,7 @@ union all
               ))
 union all
 select (a.sqlname || ' (' || a.sqlsrc || ') [ads]')::varchar,sqlname,sqlname,'ads'::varchar,'F'::varchar,'T'::varchar,
-null::varchar,null::varchar,null::varchar,null::varchar 
+'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar 
 from axdirectsql a
 join axpermissions a2 on a.sqlname =a2.formcap 
 where (a2.axusername = pusername or a2.axuserrole = ANY(string_to_array(puserrole,',')))
@@ -1263,10 +1262,306 @@ union all
 SELECT
                'Inbox'::varchar displaydata,
                'Inbox'::varchar caption,
-               'Inbox'::varchar name,'Inbox'::varchar stype,null,null,null,null,null,null;
+               'Inbox'::varchar name,'Inbox'::varchar stype,'NA','NA','NA','NA','NA','NA';
 end if;
  
 END;
 $function$
 >>
 
+-- fn_axi_getstructs_obj | replace for primaryfieldvalue+fieldnames and selected fieldvalue with primary fieldvalue suffix
+<<
+CREATE OR REPLACE FUNCTION fn_axi_getstructs_obj(pcmd character varying, pusername character varying, puserrole character varying, ptransid character varying, pselectedfield character varying, pdimension character varying, ppermission character varying, pkeyfield character varying, pprimarytable character varying, pglobalvars character varying)
+ RETURNS TABLE(displaydata text, id text, caption text, isfield text)
+ LANGUAGE plpgsql
+AS $function$
+declare 
+v_sql text;
+v_attachfldname varchar;
+v_keyfield_normalized varchar;
+v_keyfield_srctbl varchar;
+v_keyfield_srcfld varchar;
+v_keyfield_sqlcnd varchar;
+v_keyfield_sql text;
+v_selectedfld_normalized varchar;
+v_selectedfld_srctbl varchar;
+v_selectedfld_srcfld varchar;
+v_selectedfld_nsqlcnd varchar;
+v_selectedfld_dsqlcnd varchar;
+v_selectedfld_sql text;
+v_dimension_filter text;
+v_includedcomps text;
+v_excludedcomps text;
+v_viewctrl varchar;
+v_editctrl varchar;
+v_finalcomps text;
+v_fullcontrol varchar;
+v_fieldlist_sql text;
+begin
+
+v_attachfldname:='axpfile%';
+
+
+select srckey,lower(srctf),lower(srcfld),case when datatype in('c','t') then concat(' and p.',lower(fname),'!=''''') else ' and 1=1' end
+into v_keyfield_normalized,v_keyfield_srctbl,v_keyfield_srcfld,v_keyfield_sqlcnd
+from axpflds
+where tstruct = ptransid and lower(fname) = lower(pkeyfield);
+
+select srckey,lower(srctf),lower(srcfld),
+case when datatype in('c','t') then concat(' and s.',lower(fname),'!=''''') else '' end,
+case when datatype in('c','t') then concat(' and ',lower(fname),'!=''''') else '' end
+into v_selectedfld_normalized,v_selectedfld_srctbl,v_selectedfld_srcfld,v_selectedfld_nsqlcnd,v_selectedfld_dsqlcnd
+from axpflds
+where tstruct = ptransid and lower(fname)= lower(pselectedfield);	
+
+
+
+if pdimension = 'T' then
+
+	SELECT filtercnd into v_dimension_filter 
+	from fn_permissions_getpermission('axi', ptransid, pusername, puserrole, pglobalvars);
+
+	v_dimension_filter := case when length(v_dimension_filter) > 2 then concat(' and ',replace(v_dimension_filter,'{primarytable.}','p.')) end;
+
+end if;
+
+if ppermission = 'T' then 
+
+	SELECT lower(concat(view_includedc,view_includeflds)),lower(concat(view_excludedc,view_excludeflds)),viewctrl,editctrl,fullcontrol
+	into v_includedcomps,v_excludedcomps,v_viewctrl,v_editctrl ,v_fullcontrol
+	from fn_permissions_getpermission('axi', ptransid, pusername, puserrole, pglobalvars);
+
+	if v_fullcontrol = 'T' or v_viewctrl = '0' then
+		v_fieldlist_sql := format($sql$
+								  	SELECT (caption || ' (' || fname || ')' || ' [' || 'field' || ']')::text AS displaydata,
+						           '0'::text AS id,
+						           caption::text AS caption,
+						           't'::text AS isfield  
+								    FROM axpflds
+								    WHERE tstruct = %L
+									and dcname='dc1'
+								    AND hidden = 'F'
+								    AND savevalue = 'T'	
+									and datatype !='i' 
+									and lower(fname) not like %L
+									$sql$,
+									ptransid,
+									v_attachfldname);
+	elsif coalesce(v_fullcontrol,'F') = 'F' and v_viewctrl = '1' then
+		v_fieldlist_sql := format($sql$
+								  	SELECT (caption || ' (' || fname || ')' || ' [' || 'field' || ']')::text AS displaydata,
+						           '0'::text AS id,
+						           caption::text AS caption,
+						           't'::text AS isfield  
+								    FROM axpflds
+								    WHERE tstruct = %L
+									and dcname='dc1'
+								    AND hidden = 'F'
+								    AND savevalue = 'T'	
+									and datatype !='i'								
+									and lower(fname) = ANY(string_to_array(%L,',')) 	
+									and lower(fname) not like %L					
+									$sql$,
+									ptransid,
+									lower(v_includedcomps),
+									v_attachfldname);
+	elsif coalesce(v_fullcontrol,'F') = 'F' and v_viewctrl = '2' then
+			v_fieldlist_sql := format($sql$
+									  	SELECT (caption || ' (' || fname || ')' || ' [' || 'field' || ']')::text AS displaydata,
+							           '0'::text AS id,
+							           caption::text AS caption,
+							           't'::text AS isfield  
+									    FROM axpflds
+									    WHERE tstruct = %L
+										and dcname='dc1'
+									    AND hidden = 'F'
+									    AND savevalue = 'T'	
+										and datatype !='i'
+										and lower(fname) != ALL(string_to_array(%L,',')) 
+										and lower(fname) not like %L		 						
+										$sql$,
+										ptransid,
+										v_excludedcomps,
+										v_attachfldname);
+
+	end if;
+else 	
+	v_fieldlist_sql := format($sql$
+						SELECT (caption || ' (' || fname || ')' || ' [' || 'field' || ']')::text AS displaydata,
+						'0'::text AS id,
+						caption::text AS caption,
+						't'::text AS isfield  
+						FROM axpflds
+						WHERE tstruct = %L
+						and dcname='dc1'
+						AND hidden = 'F'
+						AND savevalue = 'T'	 	 
+						and datatype !='i'
+						and lower(fname) not like %L
+						$sql$,
+						ptransid,
+						v_attachfldname);
+
+end if;
+
+if v_keyfield_normalized = 'T' then 
+
+v_keyfield_sql := format(
+    $sql$
+    SELECT distinct
+			(s.%I)::text AS displaydata,
+           '0'::text AS id,
+           (s.%I)::text AS caption,
+           'f'::text AS isfield
+    FROM %I p 
+    JOIN %I s ON p.%I = s.%I
+    WHERE p.%I IS NOT NULL 
+	%s
+    $sql$,
+	v_keyfield_srcfld,
+    v_keyfield_srcfld,          
+    lower(pprimarytable), 
+    v_keyfield_srctbl, 
+    lower(pkeyfield),   
+    v_keyfield_srctbl||'id',   
+	lower(pkeyfield),	
+	v_dimension_filter    
+);
+else
+v_keyfield_sql := format(
+    $sql$
+    SELECT (p.%I)::text AS displaydata,
+           '0'::text AS id,
+           p.%I::text AS caption,
+           'f'::text AS isfield
+    FROM %I p
+    WHERE p.%I IS NOT NULL 
+	%s
+	%s
+$sql$,
+    lower(pkeyfield),
+    lower(pkeyfield),
+    lower(pprimarytable),
+    lower(pkeyfield),	
+	v_keyfield_sqlcnd,
+	v_dimension_filter
+);
+
+end if;
+
+if pselectedfield!='0' then 
+	if v_selectedfld_normalized = 'T' then 
+		v_selectedfld_sql := case when v_keyfield_normalized='F' then
+									format(
+								    $sql$
+								    SELECT distinct on (p.%I,s.%I) 
+											(s.%I || '[' || p.%I || ']')::text AS displaydata,
+								           '0'::text AS id,
+								           (s.%I)::text AS caption,
+								           'f'::text AS isfield
+								    FROM %I p 
+								    JOIN %I s ON p.%I = s.%I
+								    WHERE p.%I IS NOT NULL 
+									%s
+								    $sql$,
+									lower(pkeyfield),
+									v_selectedfld_srcfld,
+									v_selectedfld_srcfld,     
+									lower(pkeyfield),
+								    v_selectedfld_srcfld,     
+								    lower(pprimarytable), 
+								    v_selectedfld_srctbl, 
+								    lower(pselectedfield),   
+								    v_selectedfld_srctbl||'id',   
+								    lower(pselectedfield),
+									v_dimension_filter    
+								) 
+							when v_keyfield_normalized='T' then 
+								format(
+								    $sql$
+								    SELECT distinct on (s.%I,k.%I) 
+											(s.%I || '[' || k.%I || ']')::text AS displaydata,
+								           '0'::text AS id,
+								           (s.%I)::text AS caption,
+								           'f'::text AS isfield
+								    FROM %I p 
+								    JOIN %I s ON p.%I = s.%I
+									join %I k on p.%I = k.%I
+								    WHERE p.%I IS NOT NULL 
+									%s
+								    $sql$,
+									v_selectedfld_srcfld,
+									v_keyfield_srcfld,
+									v_selectedfld_srcfld,     
+									v_keyfield_srcfld,
+								    v_selectedfld_srcfld,     
+								    lower(pprimarytable), 
+								    v_selectedfld_srctbl, 
+								    lower(pselectedfield),   
+								    v_selectedfld_srctbl||'id',   
+									v_keyfield_srctbl,
+									lower(pkeyfield),
+									v_keyfield_srctbl||'id',
+								    lower(pselectedfield),									
+									v_dimension_filter    
+								)
+end;
+	else
+		v_selectedfld_sql := case when v_keyfield_normalized='F' then 
+								format(
+							    $sql$
+							    SELECT distinct (p.%I || '[' || p.%I || ']')::text AS displaydata,
+							           '0'::text AS id,
+							           p.%I::text AS caption,
+							           'f'::text AS isfield
+							    FROM %I p
+							    WHERE p.%I IS NOT NULL							
+						%s								
+						%s
+							$sql$,
+							    lower(pselectedfield),
+								lower(pkeyfield),
+							    lower(pselectedfield),
+							    lower(pprimarytable),
+							    lower(pselectedfield),
+								v_selectedfld_dsqlcnd,
+								v_dimension_filter
+							)
+							when v_keyfield_normalized='T' then 
+								format(
+							    $sql$
+							    SELECT distinct (p.%I || '[' || s.%I || ']')::text AS displaydata,
+							           '0'::text AS id,
+							           p.%I::text AS caption,
+							           'f'::text AS isfield
+							    FROM %I p
+								join %I s on p.%I = s.%I
+							    WHERE p.%I IS NOT NULL 
+								%s
+								%s
+							$sql$,
+							    lower(pselectedfield),
+								v_keyfield_srcfld,
+								lower(pselectedfield),
+								lower(pprimarytable),
+								v_keyfield_srctbl,
+							    lower(pkeyfield),
+								v_keyfield_srctbl||'id',
+								lower(pkeyfield),
+								v_selectedfld_nsqlcnd,
+								v_dimension_filter
+							) end;
+					
+	end if;
+end if;
+
+
+if pselectedfield='0' then
+v_sql := concat(v_keyfield_sql,' union all',v_fieldlist_sql);
+else
+v_sql := v_selectedfld_sql;
+end if;
+return query execute v_sql;
+
+END; $function$
+>>
