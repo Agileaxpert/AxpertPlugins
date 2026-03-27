@@ -852,11 +852,11 @@ END;
 $$
 >>
 
---fn_permissions_getpermission
+--fn_permissions_getpermission | to be removed from axi , as this will be added to product code.
 
 <<
 CREATE OR REPLACE FUNCTION fn_permissions_getpermission(pmode character varying, ptransid character varying, pusername character varying, proles character varying DEFAULT 'All'::character varying, pglobalvars character varying DEFAULT 'NA'::character varying)
- RETURNS TABLE(transid character varying, fullcontrol character varying, userrole character varying, allowcreate character varying, view_access character varying, view_includedc character varying, view_excludedc character varying, view_includeflds character varying, view_excludeflds character varying, edit_access character varying, edit_includedc character varying, edit_excludedc character varying, edit_includeflds character varying, edit_excludeflds character varying, maskedflds character varying, filtercnd text, encryptedflds character varying, permissiontype character varying)
+ RETURNS TABLE(transid character varying, fullcontrol character varying, userrole character varying, allowcreate character varying, view_access character varying, view_includedc character varying, view_excludedc character varying, view_includeflds character varying, view_excludeflds character varying, edit_access character varying, edit_includedc character varying, edit_excludedc character varying, edit_includeflds character varying, edit_excludeflds character varying, maskedflds character varying, filtercnd text, encryptedflds character varying, permissiontype character varying, viewctrl character varying, editctrl character varying)
  LANGUAGE plpgsql
 AS $function$
 declare 
@@ -885,9 +885,9 @@ select count(*) into v_applypermissions from axgrouptstructs where ftransid = pt
 if v_applypermissions > 0 then
 
 select  case when length(cnd1)>2 then 1 else 0 end,cnd1 into v_dimensionsexists,v_usercondition from axusergrouping a 
-	join axusers b on a.axusersid = b.axusersid 
-	join axgrouptstructs a2 on a2.ftransid=ptransid
-	where b.username  = fn_permissions_getpermission.pusername;
+ join axusers b on a.axusersid = b.axusersid 
+ join axgrouptstructs a2 on a2.ftransid=ptransid
+ where b.username  = fn_permissions_getpermission.pusername;
 
 
 if pglobalvars !='NA' then
@@ -1012,49 +1012,54 @@ fullcontrol:= 'T';
 transid := rec_transid.transid;
 userrole := null;
 view_includedc  :=null;
-view_excludedc  :=null;		 
+view_excludedc  :=null;   
 view_includeflds:=null;
 view_excludeflds :=null;
 edit_includedc :=null;
-edit_excludedc :=null;		 
+edit_excludedc :=null;   
 edit_includeflds :=null;
 edit_excludeflds :=null;
-maskedflds := null;				
+maskedflds := null;    
 view_access := null;
 edit_access := null;
-view_includeflds := null;		
+view_includeflds := null;  
 view_includedc :=null;
 allowcreate := null;
 filtercnd := case when v_applypermissions > 0 then array_to_string(v_final_conditions,' and ') else null end;
-select string_agg(fname,',') into encryptedflds  from axpflds where tstruct=rec_transid.transid and encrypted='T';	
-	
+viewctrl := '0';
+editctrl :='0';
+select string_agg(fname,',') into encryptedflds  from axpflds where tstruct=rec_transid.transid and encrypted='T'; 
+ 
 return next;
 
 else
 
 for rec in execute rolesql
-loop	
-		transid := rec_transid.transid;
-		userrole := rec.axuserrole;
-		select string_agg(dname,',') into view_includedc  from axpdc where tstruct=rec_transid.transid and exists (select 1 from unnest(string_to_array( rec.view_includedflds,',')) val where val = dname);
-		select string_agg(dname,',') into view_excludedc  from axpdc where tstruct=rec_transid.transid and exists (select 1 from unnest(string_to_array( rec.view_excludedflds,',')) val where val = dname);		 
-		select string_agg(fname,',') into view_includeflds  from axpflds where tstruct=rec_transid.transid and savevalue='T' and exists (select 1 from unnest(string_to_array( rec.view_includedflds,',')) val where val = fname);
-		select string_agg(fname,',') into view_excludeflds  from axpflds where tstruct=rec_transid.transid and savevalue='T' and exists (select 1 from unnest(string_to_array( rec.view_excludedflds,',')) val where val = fname);
-		select string_agg(dname,',') into edit_includedc  from axpdc where tstruct=rec_transid.transid and exists (select 1 from unnest(string_to_array( rec.edit_includedflds,',')) val where val = dname);
-		select string_agg(dname,',') into edit_excludedc  from axpdc where tstruct=rec_transid.transid and exists (select 1 from unnest(string_to_array( rec.edit_excludedflds,',')) val where val = dname);		 
-		select string_agg(fname,',') into edit_includeflds  from axpflds where tstruct=rec_transid.transid and savevalue='T' and exists (select 1 from unnest(string_to_array( rec.edit_includedflds,',')) val where val = fname);
-		select string_agg(fname,',') into edit_excludeflds  from axpflds where tstruct=rec_transid.transid and savevalue='T' and exists (select 1 from unnest(string_to_array( rec.edit_excludedflds,',')) val where val = fname);
-		maskedflds := rec.fieldmaskstr;				
-		view_access := case when rec.editctrl='0' then null else case when rec.viewctrl='4' then 'None' else null end end;
-		edit_access := case when rec.editctrl='4' then 'None' else null end;
-		view_includeflds := case when rec.viewctrl='0' then view_includeflds else concat(view_includeflds,',',edit_includeflds) end;		
-		view_includedc :=case when rec.viewctrl='0' then view_includedc else  concat(view_includedc,',',edit_includedc) end;
-		allowcreate := rec.allowcreate;
-		filtercnd := rec.cnd;
-		select string_agg(fname,',') into encryptedflds  from axpflds  where tstruct=rec_transid.transid and encrypted='T' and exists (select 1 from unnest(string_to_array(view_includeflds,',')) val where val = fname);
-		fullcontrol:= null;
-		permissiontype := rec.permissiontype;
-		return next;
+loop 
+  transid := rec_transid.transid;
+  userrole := rec.axuserrole;
+  select string_agg(dname,',') into view_includedc  from axpdc where tstruct=rec_transid.transid and exists (select 1 from unnest(string_to_array( concat('dc1,',rec.view_includedflds),',')) val where val = dname);
+  select string_agg(dname,',') into view_excludedc  from axpdc where tstruct=rec_transid.transid and exists (select 1 from unnest(string_to_array( rec.view_excludedflds,',')) val where val = dname);   
+  select string_agg(fname,',') into view_includeflds  from axpflds where tstruct=rec_transid.transid and savevalue='T' and exists (select 1 from unnest(string_to_array( rec.view_includedflds,',')) val where val = fname);
+  select string_agg(fname,',') into view_excludeflds  from axpflds where tstruct=rec_transid.transid and savevalue='T' and exists (select 1 from unnest(string_to_array( rec.view_excludedflds,',')) val where val = fname);
+  select string_agg(dname,',') into edit_includedc  from axpdc where tstruct=rec_transid.transid and exists (select 1 from unnest(string_to_array( rec.edit_includedflds,',')) val where val = dname);
+  select string_agg(dname,',') into edit_excludedc  from axpdc where tstruct=rec_transid.transid and exists (select 1 from unnest(string_to_array( rec.edit_excludedflds,',')) val where val = dname);   
+  select string_agg(fname,',') into edit_includeflds  from axpflds where tstruct=rec_transid.transid and savevalue='T' and exists (select 1 from unnest(string_to_array( rec.edit_includedflds,',')) val where val = fname);
+  select string_agg(fname,',') into edit_excludeflds  from axpflds where tstruct=rec_transid.transid and savevalue='T' and exists (select 1 from unnest(string_to_array( rec.edit_excludedflds,',')) val where val = fname);
+  maskedflds := rec.fieldmaskstr;    
+  view_access := case when rec.viewctrl='4' then 'None' else null end;
+  edit_access := case when rec.editctrl='4' then 'None' else null end;
+  view_includeflds := case when rec.viewctrl='0' then view_includeflds else concat(view_includeflds,',',edit_includeflds) end;  
+  view_includedc :=case when rec.viewctrl='0' then view_includedc else  concat(view_includedc,',',edit_includedc) end;
+  allowcreate := rec.allowcreate;
+  --filtercnd := rec.cnd;
+filtercnd := array_to_string(v_final_conditions,' and ');
+  select string_agg(fname,',') into encryptedflds  from axpflds  where tstruct=rec_transid.transid and encrypted='T' and exists (select 1 from unnest(string_to_array(view_includeflds,',')) val where val = fname);
+  fullcontrol:= null;
+  permissiontype := rec.permissiontype;
+viewctrl := rec.viewctrl;
+editctrl :=rec.editctrl;
+  return next;
 
 end loop;
 
@@ -1063,7 +1068,7 @@ end if;
 end loop;
  
 return;
-	
+ 
 END; 
 $function$
 >>
@@ -1083,7 +1088,7 @@ SELECT DISTINCT
                (a.caption || ' (' || a.name || ') [tstruct]')::varchar,
                a.caption tcaption,
                a.name transid,'t'::varchar stype,coalesce(g.dimensions,'F')::varchar dimensions,
-				coalesce(p.permissions,'F')::varchar,coalesce(p.newrecord,'T')::varchar,coalesce(p.viewctrl,'T')::varchar,kf.kfld,d.tablename
+    coalesce(p.permissions,'F')::varchar,coalesce(p.newrecord,'T')::varchar,coalesce(p.viewctrl,'T')::varchar,kf.kfld,d.tablename
         FROM tstructs a
 join axpdc d on a.name = d.tstruct and d.dname='dc1'
         left JOIN axpages b ON b.pagetype = 't' || a.name
@@ -1124,14 +1129,14 @@ FROM (
     UNION ALL
     SELECT formtransid, case when allowcreate='Yes' then 'T' else 'F' end newrecord, 'R' as type, 2 as ord ,'T' permissions,case when viewctrl='4' then 'F' else 'T' end viewctrl
     FROM axpermissions
-    WHERE axuserrole = ANY(string_to_array(puserrole, ',')) and	 comptype = 'Form'
+    WHERE axuserrole = ANY(string_to_array(puserrole, ',')) and  comptype = 'Form'
 ) combined_permissions
 ORDER BY formtransid, ord ASC)p on a.name=p.formtransid
         WHERE (pmode = 'dev' OR b.visible = 'T')
           AND (
                 'default' = ANY(string_to_array(presponsiblity,','))
                 OR (ua.stype = 't' AND ua.rname = ANY(string_to_array(presponsiblity,','))
-              )); 
+              )) order by 1; 
 
 elsif pstype='i' then
   RETURN QUERY
@@ -1145,39 +1150,41 @@ SELECT DISTINCT
         WHERE (lower(pmode) = 'dev' OR b.visible = 'T')
           AND (
                 'default' = ANY(string_to_array(presponsiblity,','))
-                OR (ua.stype = 't' AND ua.rname = ANY(string_to_array(presponsiblity,','))
-              ));
+                OR (ua.stype = 'i' AND ua.rname = ANY(string_to_array(presponsiblity,','))
+              ))order by 1;
 elsif pstype='p' then
   RETURN QUERY
  SELECT DISTINCT
                (b.caption || ' [page]')::varchar,
                b.caption,
-               b.name,'p'::varchar stype,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar
+               b.props::varchar name,'p'::varchar stype,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar
         FROM  axpages b 
-        JOIN axuseraccess ua ON ua.sname = b.name     
+        left JOIN axuseraccess ua ON ua.sname = b.name     
         WHERE b.pagetype='web'
         and (lower(pmode) = 'dev' OR b.visible = 'T')
           AND (
                 'default' = ANY(string_to_array(presponsiblity,','))
                 OR (ua.rname = ANY(string_to_array(presponsiblity,','))
-              )); 
+              ))order by 1; 
 
 elsif pstype='ads' then
   RETURN QUERY
 select (a.sqlname || ' (' || a.sqlsrc || ') [ads]')::varchar,sqlname,sqlname,'ads'::varchar,'F'::varchar,'T'::varchar,
-'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar 
+'NA'::varchar,case when a2.axpermissionsid>0 then 'T' else 'F' end::varchar,'NA'::varchar,'NA'::varchar 
 from axdirectsql a
-join axpermissions a2 on a.sqlname =a2.formcap 
-where (a2.axusername = pusername or a2.axuserrole = ANY(string_to_array(puserrole,',')));
+left join axpermissions a2 on a.sqlname =a2.formcap 
+and (a2.axusername = pusername or a2.axuserrole = ANY(string_to_array(puserrole,',')))
+where sqlsrc !='Metadata'
+order by 1;
 
 elsif pstype='all' then
 
 return query
-SELECT DISTINCT
+select * from(SELECT DISTINCT
                (a.caption || ' (' || a.name || ') [tstruct]')::varchar,
                a.caption tcaption,
                a.name transid,'t'::varchar stype,coalesce(g.dimensions,'F')::varchar dimensions,
-				coalesce(p.permissions,'F')::varchar,coalesce(p.newrecord,'T')::varchar,coalesce(p.viewctrl,'T')::varchar,kf.kfld,d.tablename
+    coalesce(p.permissions,'F')::varchar,coalesce(p.newrecord,'T')::varchar,coalesce(p.viewctrl,'T')::varchar,kf.kfld,d.tablename
         FROM tstructs a
 join axpdc d on a.name = d.tstruct and d.dname='dc1'
         left JOIN axpages b ON b.pagetype = 't' || a.name
@@ -1218,7 +1225,7 @@ FROM (
     UNION ALL
     SELECT formtransid, case when allowcreate='Yes' then 'T' else 'F' end newrecord, 'R' as type, 2 as ord ,'T' permissions,case when viewctrl='4' then 'F' else 'T' end viewctrl
     FROM axpermissions
-    WHERE axuserrole = ANY(string_to_array(puserrole, ',')) and	 comptype = 'Form'
+    WHERE axuserrole = ANY(string_to_array(puserrole, ',')) and  comptype = 'Form'
 ) combined_permissions
 ORDER BY formtransid, ord ASC)p on a.name=p.formtransid
         WHERE (pmode = 'dev' OR b.visible = 'T')
@@ -1237,15 +1244,15 @@ SELECT DISTINCT
         WHERE (lower(pmode) = 'dev' OR b.visible = 'T')
           AND (
                 'default' = ANY(string_to_array(presponsiblity,','))
-                OR (ua.stype = 't' AND ua.rname = ANY(string_to_array(presponsiblity,','))
+                OR (ua.stype = 'i' AND ua.rname = ANY(string_to_array(presponsiblity,','))
               ))
 union all
  SELECT DISTINCT
                (b.caption || ' [page]')::varchar,
                b.caption,
-               b.name,'p'::varchar stype,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar
+               b.props,'p'::varchar stype,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar
         FROM  axpages b 
-        JOIN axuseraccess ua ON ua.sname = b.name     
+        left JOIN axuseraccess ua ON ua.sname = b.name     
         WHERE b.pagetype='web'
         and (lower(pmode) = 'dev' OR b.visible = 'T')
           AND (
@@ -1254,15 +1261,79 @@ union all
               ))
 union all
 select (a.sqlname || ' (' || a.sqlsrc || ') [ads]')::varchar,sqlname,sqlname,'ads'::varchar,'F'::varchar,'T'::varchar,
-'NA'::varchar,'NA'::varchar,'NA'::varchar,'NA'::varchar 
+'NA'::varchar,case when a2.axpermissionsid>0 then 'T' else 'F' end::varchar,'NA'::varchar,'NA'::varchar 
 from axdirectsql a
-join axpermissions a2 on a.sqlname =a2.formcap 
-where (a2.axusername = pusername or a2.axuserrole = ANY(string_to_array(puserrole,',')))
+left join axpermissions a2 on a.sqlname =a2.formcap 
+and (a2.axusername = pusername or a2.axuserrole = ANY(string_to_array(puserrole,',')))
+where sqlsrc !='Metadata'
 union all
 SELECT
                'Inbox'::varchar displaydata,
                'Inbox'::varchar caption,
-               'Inbox'::varchar name,'Inbox'::varchar stype,'NA','NA','NA','NA','NA','NA';
+               'Inbox'::varchar name,'Inbox'::varchar stype,'NA','NA','NA','NA','NA','NA')a order by 1;
+elsif pstype='analyse' then 
+RETURN QUERY
+SELECT DISTINCT
+               (a.caption || ' (' || a.name || ') [tstruct]')::varchar,
+               a.caption tcaption,
+               a.name transid,'t'::varchar stype,coalesce(g.dimensions,'F')::varchar dimensions,
+    coalesce(p.permissions,'F')::varchar,coalesce(p.newrecord,'T')::varchar,coalesce(p.viewctrl,'T')::varchar,kf.kfld,d.tablename
+        FROM tstructs a
+join axpdc d on a.name = d.tstruct and d.dname='dc1'
+        left JOIN axpages b ON b.pagetype = 't' || a.name
+        LEFT JOIN axuseraccess ua ON ua.sname = a.name
+left join (SELECT DISTINCT ON (combined_results.name) 
+    combined_results.name tstruct,  
+    kfld, 
+    ord
+FROM (
+    SELECT 
+        a.name,
+        a.keyfield AS kfld,
+        1 AS ord       
+    FROM axp_tstructprops a 
+    UNION ALL
+    SELECT 
+        tstruct AS name,
+        fname AS kfld,
+        CASE 
+            WHEN modeofentry = 'autogenerate' THEN 2
+            WHEN LOWER(allowduplicate) = 'f' AND LOWER(allowempty) = 'f' AND datatype = 'c' AND LOWER(hidden) = 'f' THEN 3
+            WHEN LOWER(hidden) = 'f' AND datatype = 'c' THEN 4
+            ELSE 5
+        END AS ord       
+    FROM axpflds
+    WHERE dcname = 'dc1'
+) combined_results
+ORDER BY combined_results.name, ord ASC)kf on kf.tstruct = a.name
+        left join (select ftransid,'T' dimensions from axgrouptstructs)g on a."name" = g.ftransid
+        left join (SELECT DISTINCT ON (formtransid) 
+    formtransid, 
+    newrecord, 
+    permissions,viewctrl
+FROM (
+    SELECT formtransid, case when allowcreate='Yes' then 'T' else 'F' end newrecord, 'U' as type, 1 as ord ,'T'permissions,case when viewctrl='4' then 'F' else 'T' end viewctrl
+    FROM axpermissions
+    WHERE axusername = pusername AND comptype = 'Form'
+    UNION ALL
+    SELECT formtransid, case when allowcreate='Yes' then 'T' else 'F' end newrecord, 'R' as type, 2 as ord ,'T' permissions,case when viewctrl='4' then 'F' else 'T' end viewctrl
+    FROM axpermissions
+    WHERE axuserrole = ANY(string_to_array(puserrole, ',')) and  comptype = 'Form'
+) combined_permissions
+ORDER BY formtransid, ord ASC)p on a.name=p.formtransid
+        WHERE (pmode = 'dev' OR b.visible = 'T')
+          AND (
+                'default' = ANY(string_to_array(presponsiblity,','))
+                OR (ua.stype = 't' AND ua.rname = ANY(string_to_array(presponsiblity,','))
+              ))
+union all
+select (a.sqlname || ' (' || a.sqlsrc || ') [ads]')::varchar,sqlname,sqlname,'ads'::varchar,'F'::varchar,'T'::varchar,
+'NA'::varchar,case when a2.axpermissionsid>0 then 'T' else 'F' end::varchar,'NA'::varchar,'NA'::varchar 
+from axdirectsql a
+left join axpermissions a2 on a.sqlname =a2.formcap 
+and (a2.axusername = pusername or a2.axuserrole = ANY(string_to_array(puserrole,',')))
+where sqlsrc !='Metadata'
+order by 1;
 end if;
  
 END;

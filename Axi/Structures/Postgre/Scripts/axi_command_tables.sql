@@ -94,11 +94,11 @@ INSERT INTO axi_commands
 VALUES(9, 'Run', '', 'T')
 >>
 
-
+<<
 INSERT INTO axi_commands
 (cmdtoken, command_group, command, active)
 VALUES(10, 'Analyse', '', 'T')
-
+>>
 
 --axi_command_prompts starts here
 <<
@@ -206,11 +206,10 @@ VALUES('8fbbe05b-af25-4be7-b97c-de71825267f6'::uuid, 8, 2, 'field name', 'Axi_Se
 <<
 INSERT INTO axi_command_prompts
 (id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl)
-VALUES('8fbbe05b-af25-4be7-b97c-de71825267f7'::uuid, 10, 2, 'entity name', 'Axi_AnalyticsList', NULL, NULL, NULL, ':username', NULL)
+VALUES('8fbbe05b-af25-4be7-b97c-de71825267f7'::uuid, 10, 2, 'entity name', 'axi_structmetalist', NULL, NULL, NULL, ':username,:userroles,:userresp,:mode,:structtype', NULL)
 >>
 
-<<
+--removed 
 INSERT INTO axi_command_prompts
 (id, cmdtoken, wordpos, prompt, promptsource, promptparams, promptvalues, props, extraparams, requesturl)
 VALUES('8fbbe05b-af25-4be7-b89c-de71825278f8'::uuid, 10, 3, 'group by', 'axi_fieldlist', '2', NULL, NULL, '', NULL)
->>
