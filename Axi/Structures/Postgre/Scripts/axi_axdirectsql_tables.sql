@@ -293,6 +293,38 @@ ALTER TABLE axdirectsql_metadata ADD datatypeui varchar(20) NULL
 ALTER TABLE axdirectsql_metadata ADD fdatatype varchar(2) NULL
 >>
 
+-- axdirectsql UPDATE
+
+<<
+UPDATE axdirectsql SET sqlname='axi_smartlist_ads_metadata', sqltext='select
+	a1.sqlname,
+	a1.sqltext,
+	a1.sqlparams,
+	a1.sqlquerycols,
+	a1.encryptedflds,
+	a1.cachedata,
+	a1.cacheinterval,
+	b.fldname,
+	b.fldcaption,
+	b."normalized" ,
+	b.sourcetable ,
+	b.sourcefld ,
+	hl.hyp_structtype,
+	hl.hyp_transid,
+	hl.tbl_hyperlink,hl.hyp_inline,
+	case
+		when lower(sqltext) like ''%--axp_filter%'' then ''T''
+		else ''F''
+	end as filters
+from axdirectsql a1
+join axpdef_smartlist a on a1.sqlname = a.adsname
+join axpdef_smartlist_mdata b on a.axpdef_smartlistid =b.axpdef_smartlistid
+left join(select axpdef_smartlistid,hfldname,hyp_structtype,hyp_transid, tbl_hyperlink,hyp_inline from axpdef_smartlist_hlink)hl
+on hl.axpdef_smartlistid=a.axpdef_smartlistid and b.fldname = hl.hfldname
+where a.adsname = :adsname
+order by b.axpdef_smartlist_mdatarow ' WHERE sqlname='axi_smartlist_ads_metadata'
+>>
+
 -- axdirectsql INSERT
 
 <<

@@ -1275,7 +1275,7 @@ SELECT
                'Inbox'::varchar displaydata,
                'Inbox'::varchar caption,
                'Inbox'::varchar name,'Inbox'::varchar stype,'NA','NA','NA','NA','NA','NA')a order by 1;
-elsif pstype='analyze' then 
+elsif pstype='analyse' then 
 RETURN QUERY
 SELECT DISTINCT
                (a.caption || ' (' || a.name || ') [tstruct]')::varchar,
