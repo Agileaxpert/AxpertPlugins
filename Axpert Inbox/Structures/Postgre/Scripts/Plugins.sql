@@ -1,5 +1,5 @@
 <<
-INSERT INTO agilespacedev.axdirectsql
+INSERT INTO axdirectsql
 (axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqltext, paramcal, sqlparams, accessstring, groupname, sqlsrc, sqlsrccnd, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
 VALUES(1867330000004, 'F', 0, NULL, 'admin', '2026-04-27', 'admin', '2026-04-17', NULL, 1, 1, NULL, NULL, NULL, 'ds_inboxsearch', NULL, 'SELECT *
 FROM json_to_recordset(
@@ -17,7 +17,7 @@ FROM json_to_recordset(
 
 
 <<
-INSERT INTO agilespacedev.axdirectsql
+INSERT INTO axdirectsql
 (axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqltext, paramcal, sqlparams, accessstring, groupname, sqlsrc, sqlsrccnd, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
 VALUES(1423550000006, 'F', 0, NULL, 'admin', '2026-04-30', 'admin', '2025-12-25', NULL, 1, 1, NULL, NULL, NULL, 'ds_inboxhistory', NULL, 'SELECT
     t.taskid AS TaskID,
@@ -184,7 +184,7 @@ ORDER BY t.modifiedon DESC', 'uname,ptaskid', 'uname~Character~,ptaskid~Characte
 >>
 
 <<
-INSERT INTO agilespacedev.axdirectsql
+INSERT INTO axdirectsql
 (axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqltext, paramcal, sqlparams, accessstring, groupname, sqlsrc, sqlsrccnd, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
 VALUES(1423110000001, 'F', 0, NULL, 'admin', '2026-04-28', 'admin', '2025-12-25', NULL, 1, 1, NULL, NULL, NULL, 'ds_axpertinbox', NULL, 'SELECT *
 FROM vw_axpertinbox v
@@ -239,7 +239,7 @@ ORDER BY v.edatetime DESC
 
 
 <<
-INSERT INTO agilespacedev.axdirectsql
+INSERT INTO axdirectsql
 (axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqltext, paramcal, sqlparams, accessstring, groupname, sqlsrc, sqlsrccnd, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
 VALUES(1459660000007, 'F', 0, NULL, 'admin', '2026-04-28', 'admin', '2026-01-23', NULL, 1, 1, NULL, NULL, NULL, 'ds_advancedfilter', NULL, 'SELECT *
 FROM vw_axpertinbox
@@ -328,7 +328,7 @@ ORDER BY edatetime DESC
 
 
 <<
-INSERT INTO agilespacedev.axdirectsql
+INSERT INTO axdirectsql
 (axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqltext, paramcal, sqlparams, accessstring, groupname, sqlsrc, sqlsrccnd, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
 VALUES(1973550000009, 'F', 0, NULL, 'admin', '2026-01-21', 'admin', '2025-11-17', NULL, 1, 1, NULL, NULL, NULL, 'DS_TeamMember', NULL, 'SELECT username
 FROM axusers
@@ -341,7 +341,7 @@ order by 1', 'username', 'username~Character~', 'ALL', NULL, 'Application', 5, N
 >>
 
 <<
-INSERT INTO agilespacedev.axdirectsql
+INSERT INTO axdirectsql
 (axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqltext, paramcal, sqlparams, accessstring, groupname, sqlsrc, sqlsrccnd, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
 VALUES(1779990000005, 'F', 0, NULL, 'admin', '2026-04-28', 'admin', '2026-04-01', NULL, 1, 1, NULL, NULL, NULL, 'ds_teamall', NULL, 'SELECT *
 FROM vw_axpertinbox v
@@ -392,7 +392,7 @@ ORDER BY v.edatetime DESC
 >>
 
 <<
-INSERT INTO agilespacedev.axdirectsql
+INSERT INTO axdirectsql
 (axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqltext, paramcal, sqlparams, accessstring, groupname, sqlsrc, sqlsrccnd, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
 VALUES(1968550000003, 'F', 0, NULL, 'admin', '2026-02-20', 'admin', '2025-10-07', NULL, 1, 1, NULL, NULL, NULL, 'TASKPLANNER', NULL, 'SELECT 
     th.taskid,th.taskname,
@@ -426,7 +426,7 @@ ORDER BY th.assigneddate desc', 'uname', 'uname~Character~', 'ALL', NULL, 'Appli
 
 
 <<
-INSERT INTO agilespacedev.axdirectsql
+INSERT INTO axdirectsql
 (axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqltext, paramcal, sqlparams, accessstring, groupname, sqlsrc, sqlsrccnd, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
 VALUES(1350010000006, 'F', 0, NULL, 'admin', '2025-12-05', 'admin', '2025-12-05', NULL, 1, 1, NULL, NULL, NULL, 'RECORDAFTERSAVE', NULL, 'select t.tasku1id from tasku1 t where t.taskid=:taskid', 'taskid', 'taskid~Character~', 'ALL', NULL, 'Application', 5, NULL, 'F', '6 Hr', NULL, NULL, NULL);
 >>
@@ -447,7 +447,7 @@ create table taskplan(taskid varchar(20),username varchar(20),scheduleddate date
 
 
 <<
-CREATE OR REPLACE FUNCTION agilespacedev.fn_inbox_search(p_user text, p_search text)
+CREATE OR REPLACE FUNCTION fn_inbox_search(p_user text, p_search text)
  RETURNS json
  LANGUAGE plpgsql
 AS $function$
@@ -524,7 +524,7 @@ $function$
 
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.get_last_date(period text, td text DEFAULT NULL::text)
+CREATE OR REPLACE FUNCTION get_last_date(period text, td text DEFAULT NULL::text)
  RETURNS date
  LANGUAGE plpgsql
 AS $function$
@@ -557,7 +557,7 @@ $function$
 >>
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.trg_update_taskf_hdr_from_close()
+CREATE OR REPLACE FUNCTION trg_update_taskf_hdr_from_close()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -590,7 +590,7 @@ $function$
 >>
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.trg_update_taskf_hdr_from_complete()
+CREATE OR REPLACE FUNCTION trg_update_taskf_hdr_from_complete()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -623,7 +623,7 @@ $function$
 >>
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.trg_update_taskf_hdr_from_drop()
+CREATE OR REPLACE FUNCTION trg_update_taskf_hdr_from_drop()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -656,7 +656,7 @@ $function$
 >>
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.trg_update_taskf_hdr_from_return()
+CREATE OR REPLACE FUNCTION trg_update_taskf_hdr_from_return()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -698,7 +698,7 @@ $function$
 >>
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.trg_update_taskf_hdr_from_delay()
+CREATE OR REPLACE FUNCTION trg_update_taskf_hdr_from_delay()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -731,7 +731,7 @@ $function$
 >>
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.trg_update_taskf_hdr_from_send()
+CREATE OR REPLACE FUNCTION trg_update_taskf_hdr_from_send()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -776,7 +776,7 @@ $function$
 
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.trg_update_taskf_hdr_status_update()
+CREATE OR REPLACE FUNCTION trg_update_taskf_hdr_status_update()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -805,7 +805,7 @@ $function$
 >>
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.axp_sch_axgs000001()
+CREATE OR REPLACE FUNCTION axp_sch_axgs000001()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -844,7 +844,7 @@ return new;
 
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.trg_manage_taskusers()
+CREATE OR REPLACE FUNCTION trg_manage_taskusers()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -876,7 +876,7 @@ $function$
 >>
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.get_last_date(period text, td text DEFAULT NULL::text)
+CREATE OR REPLACE FUNCTION get_last_date(period text, td text DEFAULT NULL::text)
  RETURNS date
  LANGUAGE plpgsql
 AS $function$
@@ -911,7 +911,7 @@ $function$
 
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.fn_taskf_hdr_audit()
+CREATE OR REPLACE FUNCTION fn_taskf_hdr_audit()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -942,7 +942,7 @@ $function$
 >>
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.trg_delete_tasku1()
+CREATE OR REPLACE FUNCTION trg_delete_tasku1()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -962,7 +962,7 @@ $function$
 >>
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.trg_update_taskf_hdr()
+CREATE OR REPLACE FUNCTION trg_update_taskf_hdr()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -986,7 +986,7 @@ $function$
 >>
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.fn_log_task_copy()
+CREATE OR REPLACE FUNCTION fn_log_task_copy()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -1015,7 +1015,7 @@ $function$
 >>
 
 <<
-CREATE OR REPLACE FUNCTION agilespace.fn_update_emailto()
+CREATE OR REPLACE FUNCTION fn_update_emailto()
  RETURNS trigger
  LANGUAGE plpgsql
 AS $function$
@@ -1059,7 +1059,7 @@ insert
     or
 update
     on
-    agilespace.close1 for each row execute function trg_update_taskf_hdr_from_close()
+    close1 for each row execute function trg_update_taskf_hdr_from_close()
 >>
 
 <<
@@ -1068,7 +1068,7 @@ insert
     or
 update
     on
-    agilespace.complete_hdr for each row execute function trg_update_taskf_hdr_from_complete()
+    complete_hdr for each row execute function trg_update_taskf_hdr_from_complete()
 >>
 
 <<
@@ -1077,7 +1077,7 @@ insert
     or
 update
     on
-    agilespace.drop1 for each row execute function trg_update_taskf_hdr_from_drop()
+    drop1 for each row execute function trg_update_taskf_hdr_from_drop()
 >>
 
 <<
@@ -1086,7 +1086,7 @@ insert
     or
 update
     on
-    agilespace.retun1 for each row execute function trg_update_taskf_hdr_from_return()
+    retun1 for each row execute function trg_update_taskf_hdr_from_return()
 >>
 
 <<
@@ -1095,7 +1095,7 @@ insert
     or
 update
     on
-    agilespace.taskf_hdr for each row execute function axp_sch_axgs000001()
+    taskf_hdr for each row execute function axp_sch_axgs000001()
 >>
 
 <<
@@ -1106,14 +1106,14 @@ delete
     or
 update
     on
-    agilespace.taskf_hdr for each row execute function trg_manage_taskusers()
+    taskf_hdr for each row execute function trg_manage_taskusers()
 >>
 
 <<
 create trigger trg_taskf_hdr_audit after
 update
     on
-    agilespace.taskf_hdr for each row execute function fn_taskf_hdr_audit()
+    taskf_hdr for each row execute function fn_taskf_hdr_audit()
 >>
 
 <<
@@ -1122,7 +1122,7 @@ insert
     or
 update
     on
-    agilespace.taskinformdelay_hdr for each row execute function trg_update_taskf_hdr_from_delay()
+    taskinformdelay_hdr for each row execute function trg_update_taskf_hdr_from_delay()
 
 >>
 
@@ -1132,7 +1132,7 @@ insert
     or
 update
     on
-    agilespace.tasksend_hdr for each row execute function trg_update_taskf_hdr_from_send()
+    tasksend_hdr for each row execute function trg_update_taskf_hdr_from_send()
 >>
 
 <<
@@ -1141,14 +1141,14 @@ insert
     or
 update
     on
-    agilespace.taskstatusupdate_hdr for each row execute function trg_update_taskf_hdr_status_update()
+    taskstatusupdate_hdr for each row execute function trg_update_taskf_hdr_status_update()
 >>
 
 <<
 create trigger tasku1_delete_trigger before
 update
     on
-    agilespace.tasku1 for each row
+    tasku1 for each row
     when (((new.deletflg)::text = 'T'::text)) execute function trg_delete_tasku1()
 >>
 
@@ -1158,14 +1158,14 @@ delete
     or
 update
     on
-    agilespace.tasku1 for each row execute function trg_update_taskf_hdr()
+    tasku1 for each row execute function trg_update_taskf_hdr()
 >>
 
 <<
 create trigger trg_tasku_log_copy after
 insert
     on
-    agilespace.tasku1 for each row execute function fn_log_task_copy()
+    tasku1 for each row execute function fn_log_task_copy()
 >>
 
 <<
@@ -1176,12 +1176,12 @@ update
     of assignby,
     assignto,
     tagpeople on
-    agilespace.tasku1 for each row execute function fn_update_emailto();
+    tasku1 for each row execute function fn_update_emailto();
 >>
 
 
 <<
-CREATE OR REPLACE VIEW agilespace.vw_axpertinbox
+CREATE OR REPLACE VIEW vw_axpertinbox
 AS SELECT DISTINCT a.touser,
     a.processname,
     a.taskname,
