@@ -1,0 +1,1528 @@
+<html xmlns="http://www.w3.org/1999/xhtml"><head runat="server">
+    <title>Process Flow</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="../../UI/axpertUI/style.bundle.css">
+    <link rel="stylesheet" href="../../UI/axpertUI/plugins.bundle.css">
+    <link rel="stylesheet" href="../../ThirdParty/jquery-confirm-master/jquery-confirm.min.css">
+    <link rel="stylesheet" href="css/AxpertInbox.css?v=8" type="text/css">
+    <style>
+        div#ktMenu {
+            /* transform: translate(327px, 35px)!important; */
+            cursor: pointer;
+            padding: 8px;
+            font-size: small;
+            font-weight: 500;
+            position: absolute;
+            inset: unset !important;
+            transform: none !important;
+        }
+
+        .text-hover-primary:hover {
+            background: #d3d3d35c;
+            transition: color .2s ease, background-color .2s ease;
+            /* color: #0774fe!important; */
+            /* width: -webkit-fill-available; */
+            color: black !important;
+        }
+
+
+        .user-main {
+            background: #4e86c7;
+            color: #fff;
+            padding: 5px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            display: block;
+            align-items: center;
+            user-select: none;
+            position: relative !important;
+            z-index: 100000 !important;
+            pointer-events: auto;
+            font-size: 15spx;
+            font-size: 15px;
+            min-width: 110px;
+            max-width: 160px;
+            left: -10px;
+        }
+
+        .arrow {
+            position: absolute;
+            right: 0px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            pointer-events: none;
+
+        }
+
+        .group-btn .material-icons {
+            font-size: 18px;
+        }
+
+
+
+        .user-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+
+
+
+        /* ===============================
+   INBOX USER SWITCHER — FINAL FIX
+================================ */
+
+        #topPanel {
+            position: relative !important;
+            overflow: visible !important;
+
+        }
+
+        .inbox-user-switcher {
+            position: relative !important;
+            display: inline-block;
+            z-index: 9999;
+
+        }
+
+
+        /* Dropdown menu */
+        .user-dropdown {
+            position: absolute !important;
+            top: calc(100% + 6px);
+            left: 0;
+            min-width: 200px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            display: none;
+            z-index: 100001 !important;
+            transform: none !important;
+            inset: unset !important;
+            top: 46px !important;
+            left: -11px !important;
+        }
+
+        /* When opened */
+        .user-dropdown.open {
+            display: block !important;
+        }
+
+        /* Prevent Axpert overlays from covering it */
+        .Page-Title,
+        .Title-Section,
+        .Tkts-toolbar-Right,
+        .Tkts-toolbar-Left {
+            overflow: visible !important;
+        }
+
+
+
+        .user-item:hover {
+            background: #f3f6fb;
+        }
+
+        /* .pagename{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: max-content;
+    gap: 4px;
+} */
+        .icon-filters {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon-filter {
+            display: flex;
+            align-items: center;
+            /* gap: 6px; */
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            background: #f3f6fb;
+            color: #444;
+            font-size: 12px;
+            transition: all .2s ease;
+            margin: 10px 0px;
+        }
+
+        .icon-filter .material-icons {
+            font-size: 18px;
+        }
+
+        .icon-filter:hover {
+            background: #e1e7f5;
+        }
+
+        .icon-filter.active {
+            background: #4e86c7;
+            color: white;
+        }
+
+        .icon-filter .count {
+            font-size: 11px;
+            opacity: 0.85;
+        }
+
+        .icon-all {
+            color: #3b82f6;
+        }
+
+        /* Blue */
+        .icon-active {
+            color: #f59e0b;
+        }
+
+        /* Amber */
+        .icon-completed {
+            color: #22c55e;
+        }
+
+        /* Green */
+        .icon-sent {
+            color: #6366f1;
+        }
+
+        /* Indigo */
+        .icon-pending {
+            color: #f97316;
+        }
+
+        /* Orange */
+        .icon-approved {
+            color: #10b981;
+        }
+
+        /* Teal */
+        .icon-rejected {
+            color: #ef4444;
+        }
+
+        /* Red */
+        .icon-returned {
+            color: #8b5cf6;
+        }
+
+        /* Violet */
+        .icon-filter.active .material-icons {
+            color: inherit;
+        }
+
+        .icon-message {
+            color: #0ea5e9;
+        }
+
+        /* Sky Blue */
+        .icon-notification {
+            color: #facc15;
+        }
+
+        /* Yellow */
+        .inbox-user-select {
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: 1px solid #d0d5dd;
+            background: #2563eb;
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .inbox-user-select {
+            background: #4e86c7;
+            color: #fff;
+            padding: 6px 36px 6px 16px;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 15px;
+            border: none;
+            outline: none;
+            appearance: none;
+            min-width: 140px;
+            max-width: 200px;
+            background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='16' viewBox='0 0 24 24' width='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+        }
+
+        .inbox-user-select option {
+            color: #000;
+        }
+
+        /* Make ONLY the dropdown options white */
+        .inbox-user-select option {
+            background: #ffffff !important;
+            color: #000000 !important;
+        }
+
+        /* Highlight on hover / selected option */
+        .inbox-user-select option:checked,
+        .inbox-user-select option:hover {
+            background: #f3f6fb !important;
+            color: #000000 !important;
+        }
+
+        .filter-group {
+            position: relative;
+        }
+
+        .group-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f3f6fb;
+            border-radius: 8px;
+            padding: 6px 12px;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+            width: 100px;
+        }
+
+        .group-btn:hover {
+            background: #e1e7f5;
+        }
+
+        .group-btn .arrow {
+            font-size: 16px;
+            transition: .2s;
+        }
+
+        .filter-group.open .arrow {
+            transform: rotate(180deg);
+        }
+
+        .group-menu {
+            position: absolute;
+            top: 115%;
+            left: 0;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, .15);
+            padding: 6px;
+            display: none;
+            z-index: 1000;
+            min-width: 210px;
+        }
+
+        .filter-group.open .group-menu {
+            display: block;
+        }
+
+        .group-menu .icon-filter {
+            width: 100%;
+            justify-content: flex-start;
+            border-radius: 6px;
+        }
+
+        .group-menu .icon-filter:hover {
+            background: #f3f6fb;
+        }
+
+        /* 
+        new */
+
+        .inbox-sub-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+            /* padding: 8px 12px; */
+            /* border-bottom: 1px solid #e5e7eb; */
+            /* background: #fff; */
+        }
+
+        .all-toggle {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+        }
+
+        .filter-btn {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .active-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .filter-chip {
+            background: #eef2f7;
+            border-radius: 14px;
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+
+        .filter-chip span {
+            cursor: pointer;
+            margin-left: 6px;
+        }
+
+
+
+        .hidden {
+            display: none !important;
+        }
+
+        .inbox-sub-toolbar {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .filter-wrapper {
+            position: relative;
+            /* 🔑 anchor for popup */
+        }
+
+        .filter-panel {
+            display: none;
+            position: absolute;
+            top: calc(100% - 12px);
+            left: 220px;
+            width: 330px;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+
+
+
+        .filter-panel label {
+            display: inline-block;
+            width: 48%;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .filter-panel.show {
+            display: block;
+            position: absolute;
+            z-index: 2000;
+        }
+
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 0;
+            cursor: pointer;
+        }
+
+        .filter-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+
+
+        .filter-message-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            /* pushes X to last */
+            background: #eaeef2;
+            padding: 5px 16px;
+            border-radius: 4px;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        #filterMessageText {
+            flex: 1;
+        }
+
+
+        .close-btn {
+            background: transparent;
+            border: 1px solid #94a3b8;
+            color: #1f2937;
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .all-toggle.active {
+            color: #2563eb;
+            font-weight: 600;
+        }
+
+        .search-box {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            padding-right: 149px;
+            /* width: 178%; */
+            padding-left: 5px;
+        }
+
+        .filter-icon {
+            position: absolute;
+            right: 10px;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .filter-icon.active {
+            color: #0d6efd;
+            /* blue highlight */
+        }
+
+        .menu.menu-sub.menu-sub-dropdown.menu-rounded.menu-gray-600.menu-state-bg-light.fw-bolder.w-300px.py-3.initialized.show {
+            position: absolute;
+            right: 0px;
+        }
+
+        #plistContent {
+            height: 90vh;
+            overflow-y: auto;
+        }
+
+        #filterMessageBar {
+            position: absolute;
+            top: 82px;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            /* background: #eef4ff; */
+            padding: 0px 16px;
+            border-bottom: 1px solid #ddd;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        #filterMessageBar.show {
+            transform: translateY(0);
+        }
+
+        #filterMessageBar.hidden {
+            transform: translateY(-100%);
+        }
+
+        .nametime {
+            display: block;
+            width: 80px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .content:has(#New-Landing-layout) {
+            background: #f1f4f9 !important;
+            height: 50vh !important;
+            max-height: calc(100vh - 90px) !important;
+        }
+
+        ul#horizontal-processbar {
+            /* margin-top: 45px !important; */
+            padding: 0px !important;
+        }
+
+        .deep-search-highlight {
+            animation: highlightFlash 1s ease-in-out 3;
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+        }
+
+        @keyframes highlightFlash {
+            0% {
+                background: #fff3cd;
+            }
+
+            50% {
+                background: #ffe69c;
+            }
+
+            100% {
+                background: #fff3cd;
+            }
+        }
+
+        .custom-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* button style */
+        .hdr-btn {
+            padding: 6px 14px;
+            background: #4e86c7;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            color: white;
+        }
+
+        .hdr-btn.active {
+            background: #4e86c7;
+            color: black;
+        }
+
+        /* fix select alignment */
+        .inbox-user-switcher {
+            display: flex;
+            align-items: center;
+        }
+
+        /* dropdown */
+        .hdr-dropdown {
+            position: relative;
+            width: 180px;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 110%;
+            left: 0;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            display: none;
+            min-width: 180px;
+            z-index: 9999;
+        }
+
+        .dropdown-item {
+            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+            background: #f3f6fb;
+        }
+
+        /* show dropdown */
+        .hdr-dropdown.open .dropdown-menu {
+            display: block;
+        }
+
+        .dots-menu {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 50%;
+        }
+
+        .dots-menu .material-icons {
+            font-size: 20px;
+        }
+
+        .dropdown-submenu {
+            position: relative;
+        }
+
+        .dropdown-submenu .submenu {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: 0;
+            min-width: 180px;
+            background: #fff;
+            border-radius: 6px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .dropdown-submenu:hover .submenu {
+            display: block;
+        }
+
+        .submenu-toggle {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .accordion-header {
+            padding: 8px 12px;
+            background: #f3f6fb;
+            cursor: pointer;
+            border-bottom: 1px solid #ddd;
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .accordion-body {
+            padding: 8px 12px;
+            background: #fff;
+        }
+
+        .task-item {
+            padding: 4px 0;
+            font-size: 13px;
+            border-bottom: 1px dashed #eee;
+        }
+        .search-highlight {
+    border: 2px solid #90ee90; /* light green */
+    border-radius: 6px;
+    background: #f0fff0;
+}
+/* Target the actual header element */
+.user-main {
+    position: sticky !important;
+    top: 0;
+    z-index: 1050; /* Stays above task cards */
+    background: white; 
+}
+.submenu-toggle {
+    pointer-events: none;     /* ❌ disable click */
+    cursor: default;          /* normal cursor */
+    font-weight: 600;         /* looks like header */
+}
+    </style>
+</head>
+
+
+<body id="Process_Flow" class="header-fixed header-tablet-and-mobile-fixed aside-fixed overflow-hidden vh-100 min-vh-100">
+
+    <!--begin::Content-->
+    <div class="content-- d-flex flex-column flex-column-fluid">
+        <!--begin::Container-->
+        <div id="pf_content_container" class="">
+            <!--begin::Row-->
+
+            <div class="row overflow-hidden-- vh-100-- min-vh-100--" id="PROFLOW-overalldiv">
+                <div class="Page-Title-Bar">
+                    <div class="Title-Section">
+
+
+                        <div class="Tkts-toolbar-Right">
+                            <button id="" type="submit" class="btn btn-sm btn-icon btn-primary btn-active-primary btn-custom-border-radius d-none">
+                                <span class="material-icons material-icons-style material-icons-2">add_task</span>
+                            </button>
+                            <button type="submit" id="" class="btn btn-icon btn-white btn-color-gray-600 btn-active-primary shadow-sm tb-btn btn-sm" title="Refresh Page" onclick="axProcessObj.refreshPage();">
+                                <span class="material-icons material-icons-style material-icons-2">refresh</span>
+                            </button>
+
+                            <button id="pd_timeline" class="btn btn-icon btn-white btn-color-gray-600 btn-active-primary shadow-sm tb-btn btn-sm d-none" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-start" data-kt-menu-flip="top-end" data-kt-menu-attach="parent" title="Timeline">
+                                <span class="material-icons material-icons-style material-icons-2">history_toggle_off</span>
+                            </button>
+
+                            <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light fw-bolder w-400px py-3" data-kt-menu="true" data-id="pd_timeline">
+                                <div id="TimeLine_overall" class="content">
+                                    <div class="card" id="Timeline-wrap">
+                                        <h1 class="Timeline-heading">
+                                            Timeline
+                                        </h1>
+                                        <ul class="Timel-sessions full-session d-none">
+                                        </ul>
+                                        <span id="nodata" class="p-5">No Timeline data available.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="top-panel" id="topPanel">
+
+                            <div class="Page-Title" id="process-name">
+                                <input type="checkbox" class="maincheckbox">
+
+                                <div class="btn btn-icon btn-white btn-color-gray-600 btn-active-primary shadow-sm  tb-btn btn-sm " data-kt-menu-attach="parent" data-bs-title="Hide record List" data-bs-toggle="tooltip" data-bs-placement="bottom" title="" id="collapseicon">
+                                    <span class="material-icons material-icons-style material-icons-2">menu</span>
+                                </div>
+
+
+                                <span style="width:100px">My Inbox</span>
+                               
+
+
+                                <div class="Tkts-toolbar-Left">
+                                    <div class="d-flex gap-1">
+                                        <div class="d-flex-- align-items-stretch flex-shrink-0 gap-8 filterAlignChild">
+                                            <div class="btn btn-icon btn-white btn-color-gray-600 btn-active-primary shadow-sm  tb-btn btn-sm d-none" data-kt-menu-attach="parent" data-bs-title="Next Record" data-bs-toggle="tooltip" data-bs-placement="bottom" id="nextrecord">
+                                                <span class="material-icons material-icons-style material-icons-2">arrow_downward</span>
+                                            </div>
+                                            <div class="btn btn-icon btn-white btn-color-gray-600 btn-active-primary shadow-sm  tb-btn btn-sm d-none" data-kt-menu-attach="parent" data-bs-title="Previous Record" data-bs-toggle="tooltip" data-bs-placement="bottom" id="previousrecord">
+                                                <span class="material-icons material-icons-style material-icons-2">arrow_upward</span>
+                                            </div>
+
+
+
+                                            <div class="btn btn-icon btn-white btn-color-gray-600 btn-active-primary shadow-sm  tb-btn btn-sm" data-kt-menu-placement="bottom" data-kt-menu-flip="top" data-kt-menu-attach="parent" id="filterButton" data-kt-menu-trigger="click">
+                                                <span class="material-icons material-icons-style material-icons-2" data-bs-toggle="tooltip" data-bs-title="Filter">filter_list</span>
+                                            </div>
+
+                                            <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded  menu-title-gray-700 menu-icon-gray-500 menu-active-bg menu-state-color fw-semibold py-4 fs-base w-250px" data-kt-menu="true" id="ktMenu" data-kt-element="theme-mode-menu">
+                                                <div class="menu-item cursor-pointer">
+                                                    <a href="#" class="menu-link active" id="alllist" data-id="all">
+                                                        <span class="menu-icon">
+                                                            <span class="material-icons">mail</span></span>
+                                                        <span class="menu-title">All</span>
+                                                        <span class="menu-count">150</span>
+                                                    </a>
+                                                </div>
+                                                <div class="menu-item cursor-pointer">
+                                                    <a href="#" class="menu-link" id="Open_Task" data-id="">
+                                                        <span class="menu-icon">
+                                                            <span class="material-icons">mark_email_unread</span></span>
+
+                                                        <span class="menu-title">Open Task</span>
+                                                        <span class="menu-count">10</span>
+                                                    </a>
+                                                </div>
+                                                <div class="menu-item cursor-pointer">
+                                                    <a href="#" class="menu-link" id="My_Team" data-id="">
+                                                        <span class="menu-icon">
+                                                            <span class="material-icons">groups</span></span>
+
+                                                        <span class="menu-title">My Team</span>
+                                                        <span class="menu-count">10</span>
+                                                    </a>
+                                                </div>
+                                                <div class="menu-item cursor-pointer">
+                                                    <a href="#" class="menu-link" id="Pending_Approval" data-id="">
+                                                        <span class="menu-icon">
+                                                            <span class="material-icons">mark_email_read</span></span>
+
+                                                        <span class="menu-title">Pending Approval</span>
+                                                        <span class="menu-count">10</span>
+                                                    </a>
+                                                </div>
+                                                <div class="menu-item cursor-pointer">
+                                                    <a href="#" class="menu-link" id="Unread" data-id="">
+                                                        <span class="menu-icon">
+                                                            <span class="material-icons">unsubscribe</span></span>
+
+                                                        <span class="menu-title">Unread</span>
+                                                        <span class="menu-count">10</span>
+                                                    </a>
+                                                </div>
+                                                <div class="menu-item cursor-pointer">
+                                                    <a href="#" class="menu-link" id="Send_Items" data-id="completed">
+                                                        <span class="menu-icon">
+                                                            <span class="material-icons">forward_to_inbox</span></span>
+
+                                                        <span class="menu-title">Send Items</span>
+                                                        <span class="menu-count">110</span>
+                                                    </a>
+                                                </div>
+
+
+                                            </div>
+
+                                            <div class="btn btn-icon btn-white btn-color-gray-600 btn-active-primary shadow-sm  tb-btn btn-sm selectbtn" data-kt-menu-placement="bottom" data-kt-menu-flip="top" data-kt-menu-attach="parent">
+                                                <span class="material-icons material-icons-style material-icons-2" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="Select">copy</span>
+                                            </div>
+                                          
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                            
+
+
+                            <!-- Actions Section -->
+                            <div class="d-flex Right-Header-Section">
+                               
+
+
+                                <div class="Filter-Section-wrapper">
+                                    <span style="
+                                  font-size: small;
+                                  display: flex;
+                                  align-items: center;
+                                  justify-content: center;
+                                  color: gray;
+                                  margin: 5px;
+                              ">Filter</span>
+                                    <div class="hdr-dropdown main-filter">
+
+                                        <div class="hdr-btn submenu-toggle dropdown-toggle">
+                                            All
+                                            <!-- <span class="material-icons arrow">expand_more</span> -->
+                                        </div>
+
+                                        <div class="dropdown-menu">
+
+                                            <!-- ALL -->
+                                            <div class="dropdown-item" data-id="ALL">All</div>
+
+                                            <!-- MY TASKS -->
+                                            <div class="dropdown-item" data-id="Open Tasks">My Tasks</div>
+
+                                            <!-- MY TEAM TASKS -->
+                                            <div class="dropdown-submenu">
+                                                <div class="dropdown-item submenu-toggle dropdown-toggle">
+                                                    My Team Tasks
+                                                </div>
+                                                <div class="submenu">
+                                                    <div class="dropdown-item" data-id="TeamAll">All</div>
+                                                    <!-- dynamically append team members -->
+                                                    <div id="userSelect"></div>
+                                                </div>
+                                            </div>
+
+                                            <!-- PENDING APPROVAL -->
+                                            <div class="dropdown-item" data-id="Pending">My Pending Approvals</div>
+
+                                            <!-- OTHER FILTERS -->
+                                            <div class="dropdown-submenu">
+                                                <div class="dropdown-item submenu-toggle dropdown-toggle">
+                                                    Other Filters
+                                                </div>
+                                                <div class="submenu">
+                                                    <div class="dropdown-item" data-id="Approved">Approved</div>
+                                                    <div class="dropdown-item" data-id="Rejected">Rejected</div>
+                                                    <div class="dropdown-item" data-id="Returned">Returned</div>
+                                                    <!-- <div class="dropdown-item" data-id="Messages">Messages</div> -->
+                                                    <div class="dropdown-item" data-id="Notifications">Notifications
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="section search-section">
+                                    <div class="search-box">
+                                        <input id="advTextSearch" class="search-input" placeholder="Search..">
+                                        <span class="material-icons search-icon" id="deepSearchToggle">search</span>
+
+                                        <!-- Deep search toggle -->
+                                        <!-- <span id="deepSearchToggle" class="material-icons filter-icon" title="Deep Search">
+                                              tune
+                                                     </span> -->
+                                    </div>
+                                </div>
+                                <div class="section actions">
+                                    <div>
+                                        <!-- Trigger -->
+                                        <div id="pd_all_tasksNew" class="act btn btn-icon btn-white btn-color-gray-600 btn-active-primary shadow-sm tb-btn btn-sm" onclick="axProcessObj.openBulkApprove();" data-kt-menu-placement="bottom-start" data-kt-menu-flip="top-start" data-kt-menu-attach="parent" title="Bulk Approve">
+                                            <span class="material-icons material-icons-style material-icons-2">
+                                                checklist
+                                            </span>
+                                        </div>
+
+                                        <!-- Menu -->
+                                        <div class="menu menu-sub menu-sub-dropdown menu-rounded menu-gray-600 menu-state-bg-light fw-bolder w-300px py-3" data-kt-menu="true" data-id="pd_all_tasksNew">
+                                            <pd-alltasksnew></pd-alltasksnew>
+                                        </div>
+                                    </div>
+
+                                    <button id="schedulerBtn" class="act btn btn-icon btn-white btn-color-gray-600 btn-active-primary shadow-sm tb-btn btn-sm ">
+                                        <span class="material-icons material-icons-style material-icons-2 initialized" data-bs-toggle="tooltip" data-bs-original-title="Scheduler" title="">calendar_month</span></button>
+
+                                    <button id="refreshBtn" class="act btn btn-icon btn-white btn-color-gray-600 btn-active-primary shadow-sm tb-btn btn-sm ">
+                                        <span class="material-icons material-icons-style material-icons-2 initialized" data-bs-toggle="tooltip" data-bs-original-title="Refresh" title="">refresh</span></button>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="row d-none" id="Process-stepper">
+                        <div class="col-md-12" id="horizontal">
+                            <ul class="stepper stepper-horizontal" id="horizontal-processbar">
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div id="filterMessageBar" class="filter-message-bar hidden">
+
+                    <span id="filterMessageText"></span>
+                    <button id="closeFilterBar" class="close-btn">✕</button>
+                </div>
+
+
+
+
+                <!--begin:::Col-->
+                <div class="col-xl-4 p-0 col-md-4 d-flex flex-column flex-column-fluid vh-100 min-vh-100" id="PROFLOW_Left">
+                    <div class="card card-xl-stretch  flex-root h-1px  ">
+
+                        <!--begin::Body-->
+                        <div class="card-body h-300px mb-3" id="body_Container" style="padding:0px!important;height: 94vh!important;">
+                            <div id="ProcessFlow_New-container">
+
+                                <div class="tab-content" id="ProcessFlow_Content">
+                                    <!-- <div class="tab-pane fade active show" role="tabpanel" id="Tickets_Pending">
+                                        <div id="plistContentPending">
+                                        </div>
+                                    </div>
+                                    <div class="tab-pane fade" role="tabpanel" id="Tickets_Completed">
+                                        <div id="plistContentCompleted">
+                                        </div>
+                                    </div> -->
+
+                                    <div class="tab-pane fade active show" role="tabpanel" id="tickets">
+                                        <div id="plistContent">
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!--end::Body-->
+                        </div>
+
+                    </div>
+                    <!--end::Table Widget 1-->
+                </div>
+                <!--end:::Col-->
+                <!--begin:::Col-->
+                <div id="PROFLOW_Right" class="p-0 col-xl-8  col-md-8 d-flex flex-column flex-column-fluid vh-100 min-vh-100">
+                    <div class="card card-xl-stretch  flex-root h-1px  ">
+                        <iframe data-ignore-history="true" class="d-none horizontal-iframe" style="height: calc(100% - 0px);width: calc(100% - 0px);" id="rightIframe" src="about:blank"></iframe>
+                        <!--begin::Body-->
+                        <div class="card-body p-0" id="Tickets_details_view" style="overflow:auto;max-height:90vh;">
+                            <div class="card mb-5 mb-xl-2 h-100" id="process_centerpanel">
+                                <div class="d-flex flex-column text-center h-100 justify-content-center" style="height:95%">
+                                    <span class="material-icons material-icons-style material-icons-5tx mx-auto text-gray-500">add_task</span>
+                                    <h3 class="fw-boldest">Select a task to load</h3>
+                                    <h6 class="fst-italic text-gray-400">Nothing is selected</h6>
+                                </div>
+                            </div>
+                            <!--end::Card body-->
+                        </div>
+
+                    </div>
+                    <!--end:::Col-->
+                </div>
+                <div id="ProcessFlow_New_Right_Last" class="col-xl-2 col-md-2 d-flex flex-column flex-column-fluid vh-100 min-vh-100 d-block d-none">
+                    <div class="card card-xl-stretch  flex-root h-1px  ">
+
+                        <!--begin::Body-->
+                        <div class="card-body h-300px ">
+                            <div class="row">
+                                <div class="col-xl-12 col-md-4 d-flex flex-column flex-column-fluid KPI_Section  ">
+                                    <div class="card ">
+                                        <div class="card-header collapsible cursor-pointer rotate " data-bs-toggle="collapse" aria-expanded="false" data-bs-target="#KPI-1">
+                                            <h3 class="card-title">KPI Title</h3>
+                                            <div class="card-toolbar rotate-180">
+                                                <span class="material-icons material-icons-style material-icons-2">
+                                                    expand_circle_down
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="collapse show" id="KPI-1">
+                                            <div class="card-body">
+                                                <figure>
+                                                    <img class="img-fluid" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAw1BMVEX////DIC8mMlL/PzTnLDX99fa/AAm/ABD24+WGi5kYJ0t7gJDr7/D/Oi3/LR7/09Hzo6bmGyfnJS/rYWbajZHBDSLr2Nfk1Nf/r6z/MiTtcnbnDx4AGUPR1tu1vMDa3d/Fys7g4+Sqsbf19/gAAAC/xcipsbaNkJbXhIn67e4KIEgVJUr/6ej/GwCdpqyOmaD2u73wj5LmAADsVlsAAjtyeIl1eH6Dh40mLz8WIjUAABwiLDxHTVdfY2w2PEkAACEEFyxohIB5AAAC50lEQVR4nO3dDU/TQByA8fMFUDgR8F28l3J0Q9ThCxbUbfr9P5XtTIS1S2+DHtdbnl8II8s/Wx+2NeFyG0IAAAAAAAAAAAAAAAAAAAAAAADAIxdCG2F0+ZOJfSxByCOhRZ7lQmth5f+rXSniUXWqbBPGmqowu/YgrlGhFkofiYE2prwAAAC4rY2T5w0n72MfVZc2Nl80bD6KfVRd2ti817BFYVIoTB+F6aMwffEKTSakFUJJ7+TtRCvMsoHULs/Lb2HvKFqh1IOssZoYQrRCa7QbKKvU4Oo6J2X3z9l4r0NZPjvl7CsszqXpozB9FArx+HS77nQn1uHewBKFH+7Xba9Z4TaF/UYhhf1HIYX9RyGF/Uchhf0XrdBpfTd7E6MV5tY2VoQjrZcGKrROGVvbIxxEvNehVcLkd7DPmzMNhf1HIYX9RyGF/df3wtcLfFzpFvpeuPum4dPTlW6h74VPHjTsUjiPQgpDo9CPQgpvYamdeykXqpGY7b5sXy9NuNCpXC6xXppwobJnUkvvLuiEC6tXoFTenexJFy6FQvH5bdOX6wPJF+4dHtTtP7s+kH7h/sO6AwoppLBTFFJIYYXCsCikkMIKhWFRSGHk/aVaZ1l5sa6Fwpp/66XZ1XU3WC/tb6FQxs32l7YvJyZcKAe5U9o5bVvHEi5cEoUUUlihMCwKKaSwQmFYFFJIYYXCsCikkMJK4ELP+4DTL/S9l3u3af49M3tfDxu+zRduNcx/rv7O+bu68+8dFl7tL62WS+teLjA3kL1aYG7CO2BUk1lwLPJGn5bL/3sCAABYI3rom7BFYdsn3EWRtU/kRaFWOKhOXU59nyY1OhLH7RM/rPnZPjEcyV+R/nmvKvSZZ2Q0nrQ/znLqvZuhXuLJEsbFdHzpGfE+hu539bdaq7JwOFrtyLpy7MTU8/QZTc7+tE9cjCeT9onhuPD9IgNx5RnC91l10nhfQdJzoilvwzcBAAAAAAAAAACAyP4CTKCchAxIOYAAAAAASUVORK5CYII=">
+                                                </figure>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card ">
+                                        <div class="card-header collapsible cursor-pointer rotate" data-bs-toggle="collapse" aria-expanded="true" data-bs-target="#KPI-2">
+                                            <h3 class="card-title">KPI Title</h3>
+                                            <div class="card-toolbar rotate-180">
+                                                <span class="material-icons material-icons-style material-icons-2">
+                                                    expand_circle_down
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="collapse show" id="KPI-2">
+                                            <div class="card-body">
+                                                <figure>
+                                                    <img class="img-fluid" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTvyClOEGXUMdXM2DezoaC8GkYJ_Oo6BOSQAg&amp;usqp=CAU">
+                                                </figure>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!--end::Container-->
+            </div>
+
+
+        </div>
+    </div>
+
+    <!--end::Content-->
+    <div id="waitDiv" class="page-loader rounded-2 bg-radial-gradient">
+        <div class="loader-box-wrapper d-flex bg-white p-20 shadow rounded">
+            <span class="loader"></span>
+        </div>
+    </div>
+
+    <div class="modal fade" id="filterModal">
+        <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <!-- Modal body -->
+                <div class="modal-body p-0" style="max-height: 100vh">
+                    <div class="container" id="dvModalFilter"></div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="teamModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <!-- Header -->
+                <div class="modal-header">
+                    <h5 class="modal-title">Team Tasks</h5>
+                    <button type="button" class="btn-close---" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Body -->
+                <div class="modal-body" id="teamPopupContent">
+                    <!-- Dynamic content -->
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="../../UI/axpertUI/plugins.bundle.js"></script>
+    <script type="text/javascript" src="../../UI/axpertUI/scripts.bundle.js"></script>
+    <script type="text/javascript" src="../../ThirdParty/jquery-confirm-master/jquery-confirm.min.js"></script>
+    <script type="text/javascript" src="../../Js/alerts.min.js?v=32"></script>
+    <script type="text/javascript" src="../../Js/handlebars.min.js?v=2"></script>
+    <script type="text/javascript" src="../../Js/common.min.js?v=158"></script>
+    <script type="text/javascript" src="../../Js/helper.min.js?v=172"></script>
+    <script type="text/javascript" src="../../Js/xmlToJson.min.js"></script>
+    <script type="text/javascript" src="../../Js/AxProcessFlowCommon.min.js?v=1"></script>
+    <script type="text/javascript" src="../HTMLPages/js/AxProcessFlow_4.js?v=26"></script>
+    <script src="../report/js/taskslst_inbox.js?v=1230202515104"></script>
+
+
+    <script type="text/javascript">
+        var _processName = 'AxProcessFlow';
+    </script>
+    
+    <script>
+
+        let debounceTimer;
+function debounceSearch(callback, ms) {
+    return function() {
+        const context = this;
+        const args = arguments;
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => callback.apply(context, args), ms);
+    };
+}
+
+
+
+
+
+        // let isSearchMode = false;
+        document.addEventListener("DOMContentLoaded", function () {
+            if (window.KTMenu) {
+                KTMenu.createInstances();
+            }
+            document.getElementById("refreshBtn").addEventListener("click", () => {
+    const stepperContainer = document.querySelector("#Process-stepper");
+if (stepperContainer) {
+    stepperContainer.classList.add("d-none");  // ✅ SHOW parent
+}
+     const pegIframe = document.getElementById('process_iframe');
+
+        if (pegIframe) {
+        pegIframe.classList.add("d-none");
+       // pegIframe.src = url;
+    }
+                //     isSearchMode = false;
+               showDefaultRightPanel();
+                reloadInbox();
+            });
+     document.addEventListener("click", function (e) {
+    const menuEl = document.querySelector(
+        '[data-kt-menu="true"][data-id="pd_all_tasksNew"]'
+    );
+
+    const triggerBtn = document.getElementById("pd_all_tasksNew");
+
+    if (!menuEl || !triggerBtn) return;
+
+    // If click is inside menu OR button → do nothing
+    if (menuEl.contains(e.target) || triggerBtn.contains(e.target)) {
+        return;
+    }
+
+    // Otherwise → close menu
+    menuEl.classList.remove("show");
+});
+
+          
+          document.getElementById("PROFLOW_Right").addEventListener("click", function (e) {
+    e.stopPropagation();   // ✅ prevents parent reset
+});
+
+$(document).on("click", ".dropdown-submenu", function (e) {
+    e.preventDefault();
+    e.stopPropagation(); // prevents selection
+});
+
+const searchInput = document.getElementById("advTextSearch");
+let searchDebounce; 
+
+function triggerSearch(value) {
+    if (!axProcessObj) return;
+
+    axProcessObj.pageNo = 1;
+
+    const val = value.trim();
+
+    // ✅ ONLY update search
+    axProcessObj.searchtext = val || "";
+
+    // 🔥 BUT ALSO DO NOT LET IT BECOME EMPTY
+    if (!axProcessObj.filterkey) {
+        axProcessObj.filterkey = axProcessObj.lastFilterKey || "ALL";
+    }
+
+    updateDropdownLabel();
+    axProcessObj.fetchProcessList();
+}
+
+searchInput.addEventListener("input", function() {
+    clearTimeout(searchDebounce);
+    const val = this.value.trim();
+    searchDebounce = setTimeout(() => {
+        triggerSearch(val);
+    }, 500); 
+});
+
+
+
+searchInput.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") {
+        e.preventDefault(); 
+        clearTimeout(searchDebounce);
+        triggerSearch(this.value.trim());
+    }
+});
+$(document).on("click", ".submenu-toggle", function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    // return false;   // 🔥 fully block click
+});
+
+        }) 
+
+function hideProcessUI() {
+
+    // iframe
+    const pegIframe = document.getElementById('process_iframe');
+
+        if (pegIframe) {
+        pegIframe.classList.add("d-none");
+       // pegIframe.src = url;
+    }
+
+    // stepper
+    const stepper = document.getElementById("Process-stepper");
+    if (stepper) {
+        stepper.classList.add("d-none");
+    }
+
+}
+function updateDropdownLabel() {
+
+    const btn = document.querySelector(".hdr-btn");
+    if (!btn) return;
+
+    const filter = axProcessObj.filterkey;
+    const user = axProcessObj.selectedTeamUser;
+
+    console.log("🔍 LABEL STATE:", { filter, user });
+
+    // ✅ TEAM USER
+    if (user && user !== "TeamAll") {
+        btn.textContent = "My Team Tasks - " + user;
+        return;
+    }
+
+    // ✅ TEAM ALL (STRONG CHECK)
+    if (filter === "TeamAll" || user === "TeamAll") {
+        btn.textContent = "My Team Tasks - All";
+        return;
+    }
+
+    // ✅ ADVANCED
+    const adv = ["Approved","Rejected","Returned","Notifications"];
+    if (adv.includes(filter)) {
+        btn.textContent = "Other Filters - " + filter;
+        return;
+    }
+
+    // ✅ INBOX
+    if (filter === "Open Tasks") {
+        btn.textContent = "My Tasks";
+        return;
+    }
+
+    if (filter === "Pending") {
+        btn.textContent = "My Pending Approvals";
+        return;
+    }
+
+    // ✅ DEFAULT
+    btn.textContent = "All";
+}
+      
+    function reloadInbox() {
+
+    console.log("🔄 Reload Inbox (FULL RESET)");
+
+    // 🔥 RESET STATE
+    axProcessObj.pageNo = 1;
+    axProcessObj.isFetching = false;
+
+    window.masterTasks = [];
+    window._ALL_TASKS = [];
+
+    // 🔥 CLEAR LHS UI
+    const container = document.getElementById("plistContent");
+    if (container) {
+        container.innerHTML = "";
+        container.scrollTop = 0;
+    }
+
+    // 🔥 REMOVE NO MORE RECORDS
+    const noMoreEl = document.getElementById("noMoreRecords");
+    if (noMoreEl) noMoreEl.remove();
+
+    // 🔥 RESET FILTER + DS
+    axProcessObj.currentDS = "ds_axpertinbox";
+    axProcessObj.filterkey = "ALL";
+
+    // 🔥 RESET DROPDOWN TEXT
+    const toggleBtn = document.querySelector(".main-filter .dropdown-toggle");
+    if (toggleBtn) toggleBtn.innerText = "All";
+
+    // 🔥 RESET RIGHT PANEL (IMPORTANT)
+    if (typeof showDefaultRightPanel === "function") {
+       showDefaultRightPanel();
+    }
+
+    // 🔥 FORCE FETCH + RENDER
+    setTimeout(() => {
+
+        console.log("📡 Fetching inbox data...");
+
+        axProcessObj.fetchProcessList();
+
+        // ✅ SAFETY: ensure render happens
+        const originalShow = axProcessObj.showProcessList;
+
+        axProcessObj.showProcessList = function () {
+            console.log("🎯 Rendering LHS");
+
+            if (!this.tasksJson || this.tasksJson.length === 0) {
+                console.warn("⚠️ No tasks to render");
+                return;
+            }
+
+            originalShow.apply(this, arguments);
+
+            // 🔥 ENSURE SCROLL WORKS
+            const el = document.getElementById("plistContent");
+            if (el) el.style.overflowY = "auto";
+        };
+
+    }, 150);
+}
+document.getElementById("advTextSearch").addEventListener("input", function () {
+
+    const value = this.value.trim().toLowerCase();
+
+    // 🔴 RESET WHEN EMPTY
+    if (!value) {
+         showDefaultRightPanel();
+      //  reloadInbox();
+        return;
+    }
+
+    // 🔥 WAIT UNTIL DATA EXISTS
+    if (!window._ALL_TASKS || window._ALL_TASKS.length === 0) {
+        console.log("⏳ Data not loaded yet");
+        return;
+    }
+
+    const filtered = window._ALL_TASKS.filter(item =>
+        JSON.stringify(item).toLowerCase().includes(value)
+    );
+
+    console.log("🔍 Screen search:", filtered.length);
+
+    const container = document.getElementById("plistContent");
+
+    if (filtered.length > 0) {
+
+        container.innerHTML = "";
+
+        axProcessObj.tasksJson = filtered;
+        axProcessObj.showProcessList();
+
+      //  setTimeout(() => highlightSearchText(value), 200);
+
+    } else {
+        // ❗ DO NOT CLEAR LHS COMPLETELY
+        container.innerHTML = `<div style="padding:10px;">No matching records</div>`;
+    }
+});
+
+
+
+
+
+
+
+      
+        document.addEventListener("click", function (e) {
+
+            const dropdown = e.target.closest(".hdr-dropdown");
+       showDefaultRightPanel();
+            // TOGGLE when clicking dots
+            if (dropdown) {
+                e.stopPropagation();
+
+                // close others
+                document.querySelectorAll(".hdr-dropdown").forEach(d => {
+                    if (d !== dropdown) d.classList.remove("open");
+                });
+
+                dropdown.classList.toggle("open");
+            } else {
+                // click outside → close all
+                document.querySelectorAll(".hdr-dropdown")
+                    .forEach(d => d.classList.remove("open"));
+            }
+        });
+      document.addEventListener("click", function (e) {
+
+    const item = e.target.closest(".dropdown-item");
+    if (!item) return;
+
+    showDefaultRightPanel();
+    e.stopPropagation();
+
+    const childText = item.innerText.trim();
+    const selectedId = item.dataset.id;
+
+    // -------------------------------
+    // ✅ 1. UPDATE DISPLAY TEXT (TEMP UI)
+    // -------------------------------
+    let parentText = "";
+    const parentMenu = item.closest(".submenu");
+
+    if (parentMenu) {
+        const parentItem = parentMenu.previousElementSibling;
+        if (parentItem) {
+            parentText = parentItem.innerText.trim();
+        }
+    }
+
+    const displayText = parentText
+        ? parentText + " --> " + childText
+        : childText;
+
+    const toggleBtn = document.querySelector(".main-filter .dropdown-toggle");
+    if (toggleBtn) {
+        toggleBtn.innerText = displayText;
+    }
+
+    // -------------------------------
+    // ✅ 2. RESET STATE
+    // -------------------------------
+    axProcessObj.pageNo = 1;
+    axProcessObj.isFetching = false;
+
+    window.masterTasks = [];
+    window._ALL_TASKS = [];
+
+    const container = document.getElementById("plistContent");
+    if (container) container.innerHTML = "";
+
+    // -------------------------------
+    // ✅ 3. DETERMINE FILTER
+    // -------------------------------
+
+    // 🔥 TEAM USER
+    if (item.classList.contains("team-user")) {
+        axProcessObj.currentDS = "ds_teamall";
+        axProcessObj.selectedTeamUser = selectedId;
+        axProcessObj.filterkey = selectedId;
+
+        updateDropdownLabel(); // ✅ IMPORTANT
+        axProcessObj.fetchProcessList();
+        return;
+    }
+
+    // 🔥 TEAM ALL
+    if (selectedId === "TeamAll") {
+        axProcessObj.selectedTeamUser = "TeamAll";
+        axProcessObj.filterkey = "TeamAll";
+        axProcessObj.currentDS = "ds_teamall";
+
+        updateDropdownLabel(); // ✅ IMPORTANT
+        axProcessObj.fetchProcessList();
+        return;
+    }
+
+    // 🔥 RESET TEAM USER
+    axProcessObj.selectedTeamUser = null;
+
+    // 🔥 ALL
+    if (selectedId === "ALL") {
+        axProcessObj.filterkey = "ALL";
+        axProcessObj.currentDS = "ds_axpertinbox";
+
+        updateDropdownLabel(); // ✅ IMPORTANT
+        axProcessObj.fetchProcessList();
+        return;
+    }
+
+    // 🔥 ADVANCED / INBOX
+    const advancedFilters = ["pending", "approved", "returned", "rejected", "notifications"];
+
+    if (advancedFilters.includes((selectedId || "").toLowerCase())) {
+        axProcessObj.currentDS = "ds_advancedfilter";
+    } else {
+        axProcessObj.currentDS = "ds_axpertinbox";
+    }
+
+    axProcessObj.filterkey = selectedId;
+
+    updateDropdownLabel(); // ✅ IMPORTANT
+    axProcessObj.fetchProcessList();
+});
+        
+    </script>
+
+</body></html>
