@@ -233,19 +233,35 @@ CREATE TABLE axdirectsql (
 >>
 
 <<
-ALTER TABLE axdirectsql ADD cachedata VARCHAR2(1) NULL
+ALTER TABLE axdirectsql ADD sqlquerycols varchar(4000) NULL
 >>
 
 <<
-ALTER TABLE axdirectsql ADD cacheinterval VARCHAR2(10) NULL
+ALTER TABLE axdirectsql ADD cachedata varchar(1) NULL
 >>
 
 <<
-ALTER TABLE axdirectsql ADD encryptedflds VARCHAR2(4000) NULL
+ALTER TABLE axdirectsql ADD cacheinterval varchar(10) NULL
 >>
 
 <<
-ALTER TABLE axdirectsql ADD adsdesc CLOB NULL
+ALTER TABLE axdirectsql ADD encryptedflds varchar(4000) NULL
+>>
+
+<<
+ALTER TABLE axdirectsql ADD adsdesc text NULL
+>>
+
+<<
+ALTER TABLE axdirectsql ADD smartlistcnd varchar(500) NULL
+>>
+
+<<
+ALTER TABLE axdirectsql ADD pagination varchar(1) NULL
+>>
+
+<<
+ALTER TABLE axdirectsql ADD applydimensions varchar(1) NULL
 >>
 
 <<
@@ -267,7 +283,7 @@ ALTER TABLE axdirectsql_metadata ADD tbl_normalizedsource VARCHAR2(2000) NULL
 >>
 
 <<
-ALTER TABLE axdirectsql_metadata ADD tbl_hyperlink VARCHAR2(8000) NULL
+ALTER TABLE axdirectsql_metadata ADD tbl_hyperlink VARCHAR2(4000) NULL
 >>
 
 <<
@@ -498,7 +514,7 @@ Insert into AXDIRECTSQL (AXDIRECTSQLID,CANCEL,SOURCEID,MAPNAME,USERNAME,MODIFIED
 >>
 
 <<
-Insert into AXDIRECTSQL (AXDIRECTSQLID,CANCEL,SOURCEID,MAPNAME,USERNAME,MODIFIEDON,CREATEDBY,CREATEDON,WKID,APP_LEVEL,APP_DESC,APP_SLEVEL,CANCELREMARKS,WFROLES,SQLNAME,DDLDATATYPE,SQLSRC,SQLSRCCND,SQLTEXT,PARAMCAL,SQLPARAMS,ACCESSSTRING,GROUPNAME,SQLQUERYCOLS,CACHEDATA,CACHEINTERVAL,ENCRYPTEDFLDS,ADSDESC,SMARTLISTCND,PAGINATION,APPLYDIMENSIONS) values (1840440001713,'F',0,null,'rekhancia',to_date('20-05-26','DD-MM-RR'),'rekhancia',to_date('20-05-26','DD-MM-RR'),null,1,1,null,null,null,'axi_adscolumnlist',null,'Internal',1,'select b.fldcaption || ''(''||b.fldname||'')'' displaydata,b.fldname name,b.fldcaption caption,b.normalized,b.fdatatype, b.sourcetable,b.sourcefld , CASE WHEN lower(sqltext) LIKE ''%--axp_filter%'' THEN ''T'' ELSE ''F'' END AS filters from axdirectsql a left join axdirectsql_metadata b on a.axdirectsqlid =b.axdirectsqlid where sqlname = :param1','param1''param1~Character~','ALL',null,null,'F','6 Hr',null,null,null,null,null)
+Insert into AXDIRECTSQL (AXDIRECTSQLID,CANCEL,SOURCEID,MAPNAME,USERNAME,MODIFIEDON,CREATEDBY,CREATEDON,WKID,APP_LEVEL,APP_DESC,APP_SLEVEL,CANCELREMARKS,WFROLES,SQLNAME,DDLDATATYPE,SQLSRC,SQLSRCCND,SQLTEXT,PARAMCAL,SQLPARAMS,ACCESSSTRING,GROUPNAME,SQLQUERYCOLS,CACHEDATA,CACHEINTERVAL,ENCRYPTEDFLDS,ADSDESC,SMARTLISTCND,PAGINATION,APPLYDIMENSIONS) values (1840440001713,'F',0,null,'rekhancia',to_date('20-05-26','DD-MM-RR'),'rekhancia',to_date('20-05-26','DD-MM-RR'),null,1,1,null,null,null,'axi_adscolumnlist',null,'Internal',1,'select b.fldcaption || ''(''||b.fldname||'')'' displaydata,b.fldname name,b.fldcaption caption,b.normalized,b.fdatatype, b.sourcetable,b.sourcefld , CASE WHEN lower(sqltext) LIKE ''%--axp_filter%'' THEN ''T'' ELSE ''F'' END AS filters from axdirectsql a left join axdirectsql_metadata b on a.axdirectsqlid =b.axdirectsqlid where sqlname = :param1','param1','param1~Character~','ALL',null,null,'F','6 Hr',null,null,null,null,null)
 >>
 
 <<

@@ -1030,66 +1030,124 @@ CREATE OR REPLACE FUNCTION axi_firesql_v2 (
 )
 RETURN axi_firesql_tab PIPELINED
 AS
-    v_sql          CLOB := p_sql;
+    v_sql          VARCHAR2(32767);
+
     v_pair         VARCHAR2(4000);
     v_param_name   VARCHAR2(1000);
     v_param_value  VARCHAR2(4000);
 
     v_pos          NUMBER := 1;
     v_next         NUMBER;
+
     TYPE refcur IS REF CURSOR;
     rc refcur;
-    v_col1 VARCHAR2(4000);
-    v_col2 VARCHAR2(4000);
+
+    v_col1         VARCHAR2(4000);
+    v_col2         VARCHAR2(4000);
+
 BEGIN
+
+    ------------------------------------------------------------------
+    -- Convert CLOB to VARCHAR2
+    ------------------------------------------------------------------
+    v_sql := DBMS_LOB.SUBSTR(p_sql, 32767, 1);
+
     ------------------------------------------------------------------
     -- Replace Parameters
     ------------------------------------------------------------------
     IF p_param_string IS NOT NULL
-       AND TRIM(p_param_string) <> ''
+       AND TRIM(p_param_string) IS NOT NULL
        AND INSTR(v_sql, ':') > 0
     THEN
         LOOP
+
             v_next := INSTR(p_param_string, ';', v_pos);
+
             IF v_next > 0 THEN
-                v_pair := SUBSTR(p_param_string, v_pos, v_next - v_pos);
+                v_pair := SUBSTR(
+                                p_param_string,
+                                v_pos,
+                                v_next - v_pos
+                           );
             ELSE
-                v_pair := SUBSTR(p_param_string, v_pos);
+                v_pair := SUBSTR(
+                                p_param_string,
+                                v_pos
+                           );
             END IF;
+
             EXIT WHEN v_pair IS NULL;
+
             IF TRIM(v_pair) IS NOT NULL THEN
+
                 v_param_name :=
-                    TRIM(SUBSTR(v_pair, 1, INSTR(v_pair, '~') - 1));
+                    TRIM(
+                        SUBSTR(
+                            v_pair,
+                            1,
+                            INSTR(v_pair, '~') - 1
+                        )
+                    );
+
                 v_param_value :=
-                    TRIM(SUBSTR(v_pair, INSTR(v_pair, '~') + 1));
+                    TRIM(
+                        SUBSTR(
+                            v_pair,
+                            INSTR(v_pair, '~') + 1
+                        )
+                    );
+
                 IF v_param_name IS NOT NULL THEN
 
-                    v_sql := REPLACE(
-                                v_sql,
-                                ':' || v_param_name,
-                                '''' || REPLACE(v_param_value, '''', '''''') || ''''
-                             );
+                    v_sql :=
+                        REPLACE(
+                            v_sql,
+                            ':' || v_param_name,
+                            '''' || REPLACE(v_param_value, '''', '''''') || ''''
+                        );
+
                 END IF;
+
             END IF;
+
             EXIT WHEN v_next = 0;
+
             v_pos := v_next + 1;
+
         END LOOP;
+
     END IF;
+
     ------------------------------------------------------------------
     -- Handle p_fromlist
     ------------------------------------------------------------------
     IF p_fromlist IS NOT NULL
-       AND TRIM(p_fromlist) <> ''
+       AND TRIM(p_fromlist) IS NOT NULL
        AND LOWER(TRIM(p_fromlist)) <> 'null'
     THEN
+
         FOR r IN (
-            SELECT TRIM(REGEXP_SUBSTR(p_fromlist, '[^,]+', 1, LEVEL)) val
+            SELECT
+                TRIM(
+                    REGEXP_SUBSTR(
+                        p_fromlist,
+                        '[^,]+',
+                        1,
+                        LEVEL
+                    )
+                ) val
             FROM dual
-            CONNECT BY REGEXP_SUBSTR(p_fromlist, '[^,]+', 1, LEVEL) IS NOT NULL
+            CONNECT BY REGEXP_SUBSTR(
+                           p_fromlist,
+                           '[^,]+',
+                           1,
+                           LEVEL
+                       ) IS NOT NULL
         )
         LOOP
+
             IF r.val IS NOT NULL
-               AND TRIM(r.val) <> ''
+               AND TRIM(r.val) IS NOT NULL
             THEN
 
                 PIPE ROW (
@@ -1098,68 +1156,92 @@ BEGIN
                         r.val
                     )
                 );
+
             END IF;
+
         END LOOP;
+
     ELSE
+
         ------------------------------------------------------------------
         -- Sourcekey = T
         ------------------------------------------------------------------
         IF UPPER(NVL(p_sourcekey, 'F')) = 'T' THEN
+
             OPEN rc FOR
                 '
                 SELECT
                     col1,
                     RTRIM(
                         RTRIM(col2, ''0''),
-                    ''.'') AS displaydata
+                        ''.''
+                    ) AS displaydata
                 FROM (
                     ' || v_sql || '
                 )
                 WHERE col2 IS NOT NULL
-                  AND TRIM(col2) <> ''''
+                  AND TRIM(col2) IS NOT NULL
                 ';
+
             LOOP
+
                 FETCH rc INTO v_col1, v_col2;
+
                 EXIT WHEN rc%NOTFOUND;
+
                 PIPE ROW (
                     axi_firesql_obj(
                         v_col1,
                         v_col2
                     )
                 );
+
             END LOOP;
+
             CLOSE rc;
+
         ------------------------------------------------------------------
         -- Sourcekey != T
         ------------------------------------------------------------------
         ELSE
+
             OPEN rc FOR
                 '
                 SELECT
                     RTRIM(
                         RTRIM(col1, ''0''),
-                    ''.'') AS displaydata
+                        ''.''
+                    ) AS displaydata
                 FROM (
                     ' || v_sql || '
                 )
                 WHERE col1 IS NOT NULL
-                  AND TRIM(col1) <> ''''
+                  AND TRIM(col1) IS NOT NULL
                 ';
+
             LOOP
+
                 FETCH rc INTO v_col1;
+
                 EXIT WHEN rc%NOTFOUND;
 
                 PIPE ROW (
                     axi_firesql_obj(
-                        '0',
+                        ''0'',
                         v_col1
                     )
                 );
+
             END LOOP;
+
             CLOSE rc;
+
         END IF;
+
     END IF;
+
     RETURN;
+
 END axi_firesql_v2
 >>
 
