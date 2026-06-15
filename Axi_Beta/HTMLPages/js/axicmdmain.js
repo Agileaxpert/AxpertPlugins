@@ -1,8 +1,8 @@
 // Stable Branch: main
 (() => {
-    // Released On: 06/05/2026 
-    // /AxPlugins/Axi/HTMLPages/js/axi-autocomplete.js
-
+    // Released On: 11/06/2026
+    // /AxPlugins/Axi/HTMLPages/js/axicmdmain.js
+    
     let apiMetadataUrl = "";
     let apiMetadataConfigPromise = null;
     let apiMetadataConfigError = "";
@@ -237,6 +237,7 @@
     let items = [];
     let activeIndex = -1;
     let resolvedParams = {};
+    let resolvedParamType = {};
     let lastTypedTokens = [];
 
     // DATA CACHES
@@ -465,7 +466,6 @@
 
                 const message = isForced ? "Refreshed Successfully!" : "Commands Loaded Successfully!."
 
-                showToast(message, 3000, true);
                 const data = await res.json();
                 let commandsFromDb = data.commands;
 
@@ -473,6 +473,8 @@
 
                 console.log(JSON.stringify(commands));
                 localStorage.setItem("axi_commands_v1", JSON.stringify(commands));
+                showToast(message, 3000, true);
+
             } catch (err) {
                 console.error("Critical: Could not load commands", err);
             } finally {
@@ -611,7 +613,8 @@
                 const prevTokenIndex = targetIndex - 1;
                 const prevValue = cleanString(tokens[prevTokenIndex]);
                 const allowedValues = prevPrompt.promptValues.split(',').map(v => v.trim().toLowerCase());
-                const actualPrevValue = tryResolveToken(prevTokenIndex, prevValue, commandConfig, false) || prevValue;
+                // const actualPrevValue = tryResolveToken(prevTokenIndex, prevValue, commandConfig, false) || prevValue;
+                const { value: actualPrevValue, type } = tryResolveToken(prevTokenIndex, prevValue, commandConfig, false) || prevValue;
                 let valueIndex = allowedValues.indexOf(prevValue.toLowerCase());
 
                 if (valueIndex === -1 && commandConfig.commandGroup?.toLowerCase() === 'view') {
@@ -619,7 +622,7 @@
                         return null;
 
                     }
-                    const detectedType = getType(commandConfig?.prompts?.[0]?.promptSource.toLowerCase(), actualPrevValue, prevPrompt.promptValues, tokens, commandConfig);
+                    const detectedType = getType(commandConfig?.prompts?.[0]?.promptSource.toLowerCase(), { value: actualPrevValue, type: type }, prevPrompt.promptValues, tokens, commandConfig);
 
                     if (detectedType) {
                         valueIndex = allowedValues.indexOf(detectedType.toLowerCase());
@@ -787,7 +790,9 @@
         setEditSessionState(transId);
         if (tokens.length > 2) {
             rawParamName = cleanCommandToken(tokens[2]);
-            actualParamvalue = tryResolveToken(2, rawParamName, commandConfig, false);
+            // actualParamvalue = tryResolveToken(2, rawParamName, commandConfig, false);
+            const { value, type } = tryResolveToken(2, rawParamName, commandConfig, false);
+            actualParamvalue = value;
             redirectToTstruct(transId, cleanCommandToken(tokens[1]), true, fieldname, actualParamvalue);
         }
         else
@@ -848,7 +853,9 @@
 
         setEditSessionState(transId);
         if (rawParamName) {
-            paramValue = tryResolveToken(2, rawParamName, commandConfig, false);
+            // paramValue = tryResolveToken(2, rawParamName, commandConfig, false);
+            const { value, type } = tryResolveToken(2, rawParamName, commandConfig, false);
+            paramValue = value;
             redirectToTstruct(transId, cleanCommandToken(tokens[1]), true, fieldname, paramValue);
         }
         else {
@@ -892,7 +899,8 @@
 
         if (tokens.length > 2) {
             const rawParamName = cleanCommandToken(tokens[2]);
-            const actualName = tryResolveToken(2, rawParamName, commandConfig, false);
+            // const actualName = tryResolveToken(2, rawParamName, commandConfig, false);
+            const { value: actualName, type } = tryResolveToken(2, rawParamName, commandConfig, false);
 
 
             targetUrl += `status=true`;
@@ -949,7 +957,9 @@
         if (tokens.length > 2) {
             rawParamname = cleanCommandToken(tokens[2]);
 
-            paramvalue = tryResolveToken(2, rawParamname, commandConfig, false);
+            // paramvalue = tryResolveToken(2, rawParamname, commandConfig, false);
+            const { value, type } = tryResolveToken(2, rawParamname, commandConfig, false);
+            paramvalue = value;
 
             redirectToTstruct(transId, cleanCommandToken(tokens[1]), true, fieldname, paramvalue);
 
@@ -993,7 +1003,9 @@
         if (tokens.length > 2) {
             rawParamName = cleanCommandToken(tokens[2]);
 
-            paramValue = tryResolveToken(2, rawParamName, commandConfig, false);
+            // paramValue = tryResolveToken(2, rawParamName, commandConfig, false);
+            const { value, type } = tryResolveToken(2, rawParamName, commandConfig, false);
+            paramValue = value;
 
             redirectToTstruct(transId, cleanCommandToken(tokens[1]), true, fieldname, paramValue);
         }
@@ -1029,7 +1041,9 @@
 
 
             if (rawValue) {
-                paramValue = tryResolveToken(2, rawValue, commandConfig, false);
+                // paramValue = tryResolveToken(2, rawValue, commandConfig, false);
+                const { value, type } = tryResolveToken(2, rawValue, commandConfig, false);
+                paramValue = value;
             }
 
             redirectToTstruct(transId, cleanCommandToken(tokens[1]), true, fieldname, paramValue);
@@ -1050,7 +1064,9 @@
         if (tokens.length > 2) {
             rawParamName = cleanCommandToken(tokens[2]);
 
-            paramValue = tryResolveToken(2, rawParamName, commandConfig, false);
+            // paramValue = tryResolveToken(2, rawParamName, commandConfig, false);
+            const { value, type } = tryResolveToken(2, rawParamName, commandConfig, false);
+            paramValue = value;
 
             redirectToTstruct(transId, cleanCommandToken(tokens[1]), true, fieldname, paramValue);
         }
@@ -1147,7 +1163,9 @@
 
         if (tokens.length > 2) {
             rawParamName = cleanCommandToken(tokens[2]);
-            actualParamName = tryResolveToken(2, rawParamName, commandConfig, false);
+            // actualParamName = tryResolveToken(2, rawParamName, commandConfig, false);
+            const { value, type } = tryResolveToken(2, rawParamName, commandConfig, false);
+            paramValue = value;
             targetUrl += `&${fieldname}=${encodeURIComponent(rawParamName)}`;
         }
 
@@ -1223,7 +1241,9 @@
         setEditSessionState(transId);
         if (tokens.length > 2) {
             let rawParamName = cleanCommandToken(tokens[2]);
-            actualParamvalue = tryResolveToken(2, rawParamName, commandConfig, false);
+            // actualParamvalue = tryResolveToken(2, rawParamName, commandConfig, false);
+            const { value, type } = tryResolveToken(2, rawParamName, commandConfig, false);
+            actualParamvalue = value;
             redirectToTstruct(transId, "", true, fieldname, actualParamvalue);
         }
         else {
@@ -1247,7 +1267,9 @@
 
         if (tokens.length > 2) {
             rawParamName = cleanCommandToken(tokens[2]);
-            ActualParamName = tryResolveToken(2, rawParamName, commandConfig, false);
+            // ActualParamName = tryResolveToken(2, rawParamName, commandConfig, false);
+            const { value, type } = tryResolveToken(2, rawParamName, commandConfig, false);
+            ActualParamName = value;
 
             redirectToTstruct(transId, "", true, fieldname, ActualParamName);
         }
@@ -1294,7 +1316,9 @@
 
         if (tokens.length > 2) {
             rawParamName = cleanCommandToken(tokens[2]);
-            ActualParamName = tryResolveToken(2, rawParamName, commandConfig, false);
+            // ActualParamName = tryResolveToken(2, rawParamName, commandConfig, false);
+            const { value, type } = tryResolveToken(2, rawParamName, commandConfig, false);
+            ActualParamName = value;
 
             redirectToTstruct(transId, "", true, fieldname, ActualParamName);
         }
@@ -1315,7 +1339,9 @@
 
         if (tokens.length > 2) {
             rawParamName = cleanCommandToken(tokens[2]);
-            ActualParamName = tryResolveToken(2, rawParamName, commandConfig, false);
+            // ActualParamName = tryResolveToken(2, rawParamName, commandConfig, false);
+            const { value, type } = tryResolveToken(2, rawParamName, commandConfig, false);
+            ActualParamName = value;
 
             redirectToTstruct(transId, "", true, fieldname, ActualParamName);
         }
@@ -1336,7 +1362,9 @@
 
         if (tokens.length > 2) {
             rawParamName = cleanCommandToken(tokens[2]);
-            ActualParamName = tryResolveToken(2, rawParamName, commandConfig, false);
+            // ActualParamName = tryResolveToken(2, rawParamName, commandConfig, false);
+            const { value, type } = tryResolveToken(2, rawParamName, commandConfig, false);
+            ActualParamName = value;
 
             redirectToTstruct(transId, "", true, fieldname, ActualParamName);
         }
@@ -1397,7 +1425,9 @@
 
         if (tokens.length > 2) {
             rawParamName = cleanCommandToken(tokens[2]);
-            ActualParamName = tryResolveToken(2, rawParamName, commandConfig, false);
+            // ActualParamName = tryResolveToken(2, rawParamName, commandConfig, false);
+            const { value, type } = tryResolveToken(2, rawParamName, commandConfig, false);
+            ActualParamName = value;
 
             redirectToTstruct(transId, "", true, fieldname, ActualParamName);
         }
@@ -1417,7 +1447,9 @@
 
         if (tokens.length > 2) {
             rawParamName = cleanCommandToken(tokens[2]);
-            ActualParamName = tryResolveToken(2, rawParamName, commandConfig, false);
+            // ActualParamName = tryResolveToken(2, rawParamName, commandConfig, false);
+            const { value, type } = tryResolveToken(2, rawParamName, commandConfig, false);
+            ActualParamName = value;
 
             redirectToTstruct(transId, "", true, fieldname, ActualParamName);
         }
@@ -1811,6 +1843,7 @@
             if (lastToken && cleanToken !== lastToken && resolvedParams[idx]) {
                 console.log(`Token changed at position ${idx}: "${lastToken}" ? "${cleanToken}"`);
                 delete resolvedParams[idx];
+                delete resolvedParamType[idx];
                 Object.keys(resolvedParams).forEach(key => {
                     if (parseInt(key) > idx) {
                         delete resolvedParams[key];
@@ -1824,6 +1857,7 @@
             for (let i = currentTokens.length; i < lastTypedTokens.length; i++) {
                 if (resolvedParams[i]) {
                     delete resolvedParams[i];
+                    delete resolvedParamType[i];
                     console.log(`Cleared deleted token resolution at index ${i}`);
                 }
             }
@@ -1833,23 +1867,23 @@
         items = suggestLocal(text);
 
         const tokens = getTokens(text);
-const grpKey = tokens[0]?.toLowerCase();
+        const grpKey = tokens[0]?.toLowerCase();
 
-if (
-    grpKey === "view" &&
-    tokens.length > 1 &&
-    !text.endsWith(" ")
-) {
-    items = items.filter(item => {
-        const itemText = (
-            typeof item === "string"
-                ? item
-                : (item.displaydata || item.name || "")
-        ).toLowerCase();
+        if (
+            grpKey === "view" &&
+            tokens.length > 1 &&
+            !text.endsWith(" ")
+        ) {
+            items = items.filter(item => {
+                const itemText = (
+                    typeof item === "string"
+                        ? item
+                        : (item.displaydata || item.name || "")
+                ).toLowerCase();
 
-        return itemText !== "source";
-    });
-}
+                return itemText !== "source";
+            });
+        }
 
 
         render();
@@ -2806,8 +2840,9 @@ if (
             const viewSource = commandConfig?.prompts?.[0]?.promptSource?.toLowerCase();
             const viewValues = commandConfig.prompts?.[0]?.promptValues;
             const firstToken = cleanString(tokens[1] || "");
-            const actualFirstToken = tryResolveToken(1, firstToken, commandConfig, false);
-            detectedType = getType(viewSource.toLowerCase(), actualFirstToken, viewValues, tokens, commandConfig);
+            const { value: actualFirstToken, type } = tryResolveToken(1, firstToken, commandConfig, false);
+            detectedType = getType(viewSource.toLowerCase(), { value: actualFirstToken, type: type }, viewValues, tokens, commandConfig);
+            // detectedType = getType(viewSource.toLowerCase(), {value: act}, viewValues, tokens, commandConfig);
 
             if (detectedType === "ads") {
                 ignoreExtraParams = true;
@@ -3026,7 +3061,9 @@ if (
                     const logicalWordPos = parseInt(idx.trim());
                     const depTokenIndex = logicalWordPos - 1;
                     const depToken = cleanString(tokens[depTokenIndex] || "");
-                    return tryResolveToken(depTokenIndex, depToken, commandConfig, true);
+                    // return tryResolveToken(depTokenIndex, depToken, commandConfig, true);
+                    const resolved = tryResolveToken(depTokenIndex, depToken, commandConfig, true);
+                    return resolved.value;
                 });
                 paramValue = values.join('$#$');
             }
@@ -3116,7 +3153,9 @@ if (
                     const logicalWordPos = parseInt(idx.trim());
                     const depTokenIndex = logicalWordPos - 1;
                     const depToken = cleanString(tokens[depTokenIndex] || "");
-                    return tryResolveToken(depTokenIndex, depToken, commandConfig, true);
+                    // return tryResolveToken(depTokenIndex, depToken, commandConfig, true);
+                    const resolved = tryResolveToken(depTokenIndex, depToken, commandConfig, true);
+                    return resolved.value;
                 });
 
                 paramValue = values.join('$#$');
@@ -3278,7 +3317,7 @@ if (
                 filteredObjects.unshift(popOption, goOption);
             }
 
-            else if (groupKey.toLowerCase() === "analyse" && tokens.length <= 3) {
+            else if ((groupKey.toLowerCase() === "analyse") && tokens.length === 3) {
                 resultList.unshift(goOption);
                 filteredObjects.unshift(goOption);
             }
@@ -3677,18 +3716,30 @@ if (
     function tryResolveToken(tokenIndex, tokenText, commandConfig, forceResolve = false) {
 
         tokenText = cleanString(tokenText);
-        if (!tokenText) return "";
+        if (!tokenText) return { value: "", type: "" };
 
-        if (resolvedParams[tokenIndex] && !forceResolve) return resolvedParams[tokenIndex];
+        // if (resolvedParams[tokenIndex] && !forceResolve) return resolvedParams[tokenIndex];
+        if (resolvedParams[tokenIndex] && !forceResolve) return {
+            value: resolvedParams[tokenIndex],
+            type: resolvedParamType?.[tokenIndex] || ""
+        };
         // if (!tokenText && !forceResolve) return "";
-        if (!commandConfig) return tokenText;
+        // if (!commandConfig) return tokenText;
+        if (!commandConfig) return {
+            value: tokenText,
+            type: ""
+        };
 
 
         const currentTokens = getTokens(input.value);
 
 
         const promptInfo = getActivePromptInfo(commandConfig, getTokens(input.value), tokenIndex);
-        if (!promptInfo) return tokenText;
+        // if (!promptInfo) return tokenText;
+        if (!promptInfo) return {
+            value: tokenText,
+            type: ""
+        };
 
         const { config: prompt, realSource } = promptInfo;
 
@@ -3704,7 +3755,9 @@ if (
                     const logicalWordPos = parseInt(idx.trim());
                     const depTokenIndex = logicalWordPos - 1;
                     const depToken = cleanString(getTokens(input.value)[depTokenIndex] || "");
-                    return tryResolveToken(depTokenIndex, depToken, commandConfig, true);
+                    // return tryResolveToken(depTokenIndex, depToken, commandConfig, true);
+                    const resolved = tryResolveToken(depTokenIndex, depToken, commandConfig, true);
+                    return resolved.value;
                 });
                 paramValue = values.join('$#$');
             }
@@ -3755,7 +3808,9 @@ if (
                     const logicalWordPos = parseInt(idx.trim());
                     const depTokenIndex = logicalWordPos - 1;
                     const depToken = cleanString(currentTokens[depTokenIndex] || "");
-                    return tryResolveToken(depTokenIndex, depToken, commandConfig, true);
+                    // return tryResolveToken(depTokenIndex, depToken, commandConfig, true);
+                    const resolved = tryResolveToken(depTokenIndex, depToken, commandConfig, true);
+                    return resolved?.value;
                 });
                 paramValue = values.join('$#$');
 
@@ -3797,12 +3852,21 @@ if (
                     }
 
                     resolvedParams[tokenIndex] = real;
-                    return real;
+                    if (found?.stype) resolvedParamType[tokenIndex] = found?.stype;
+                    // return real;
+                    return {
+                        value: real,
+                        type: found?.stype ?? ""
+                    };
                 }
             }
         }
 
-        return tokenText;
+        // return tokenText;
+        return {
+            value: tokenText,
+            type: ""
+        };
     }
 
 
@@ -4103,6 +4167,7 @@ if (
         let suggestion = items[index];
         let displayName = suggestion;
         let realValue = "";
+        let realType = "";
         // const currentToken = tokens[targetIndex - 1]; 
 
         // if (currentToken?.toLowerCase() === "with" && tokens.length === 3) {
@@ -4130,7 +4195,21 @@ if (
                 const viewValues = commandConfig.prompts[0].promptValues;
                 const firstToken = cleanString(tokens[1] || "");
 
-                const detectedType = getType(viewSource.toLowerCase(), firstToken, viewValues, tokens, commandConfig);
+                // const detectedType = getType(viewSource.toLowerCase(), firstToken, viewValues, tokens, commandConfig);
+                const resolved = tryResolveToken(
+                    1,
+                    firstToken,
+                    commandConfig,
+                    false
+                );
+
+                const detectedType = getType(
+                    viewSource.toLowerCase(),
+                    resolved,
+                    viewValues,
+                    tokens,
+                    commandConfig
+                );
 
                 if (detectedType === "ads" && targetIndex >= 3 && targetIndex % 2 !== 0) {
                     isAdsValue = true;
@@ -4164,6 +4243,7 @@ if (
 
 
 
+
         if (foundObj && isViewCommand) {
             const caption = foundObj?.caption ? foundObj?.caption : foundObj?.displaydata;
 
@@ -4178,6 +4258,7 @@ if (
 
 
         realValue = foundObj ? (foundObj.name || foundObj.sqlname || foundObj.displaydata) : suggestion;
+        realType = foundObj?.stype ?? "";
 
 
 
@@ -4208,6 +4289,7 @@ if (
         }
 
         resolvedParams[targetIndex] = realValue;
+        resolvedParamType[targetIndex] = realType;
 
         displayName = displayName.replace(/[\r\n]+/g, " ").trim();
 
@@ -4353,6 +4435,7 @@ if (
 
 
             if (list.length > 0) {
+                console.log("Get List Cache Key: " + cacheKey);
                 localStorage.setItem(cacheKey, JSON.stringify(list));
 
             } else console.log(`List Data for Ads name ${axDatasourceName} is Empty`);
@@ -4673,7 +4756,8 @@ if (
                         const lastListItem = list[list.length - 1];
 
                         const lastTokenValue = cleanCommandToken(tokens[tokens.length - 1]);
-                        const actualLastTokenValue = tryResolveToken(tokens.length - 1, lastTokenValue, saveCommandConfig, false);
+                        // const actualLastTokenValue = tryResolveToken(tokens.length - 1, lastTokenValue, saveCommandConfig, false);
+                        const { value: actualLastTokenValue, type } = tryResolveToken(tokens.length - 1, lastTokenValue, saveCommandConfig, false);
 
                         if (lastListItem) {
 
@@ -5110,7 +5194,9 @@ if (
 
     function handleCreateNew({ tokens, commandConfig }) {
         let rawName = cleanCommandToken(tokens[1]);
-        let transId = tryResolveToken(1, rawName, commandConfig, false);
+        // let transId = tryResolveToken(1, rawName, commandConfig, false);
+        const { value, type } = tryResolveToken(1, rawName, commandConfig, false);
+        let transId = value;
 
         if (transId === rawName) {
             const list = axDatasourceObj["Axi_TStructList".toLowerCase()];
@@ -5187,7 +5273,9 @@ if (
     function handleEditData({ tokens, commandConfig, resolvedParams }) {
 
         let rawStruct = cleanCommandToken(tokens[1]);
-        let transId = tryResolveToken(1, rawStruct, commandConfig, false);
+        // let transId = tryResolveToken(1, rawStruct, commandConfig, false);
+        const { value, type } = tryResolveToken(1, rawStruct, commandConfig, false);
+        let transId = value;
 
         let fieldName = "";
         let fieldValue = "";
@@ -5264,7 +5352,9 @@ if (
         //    redirectToTstruct(transId, rawStruct, true, struct_row.keyfield, fieldUniqueId);
         //}
         let rawValue = cleanCommandToken(tokens[tokenIndex]);
-        fieldValue = tryResolveToken(tokenIndex, rawValue, commandConfig, tokenBasedBooleanCheck);
+        // fieldValue = tryResolveToken(tokenIndex, rawValue, commandConfig, tokenBasedBooleanCheck);
+        const { value: resolvedFieldValue, type: resolvedFieldType } = tryResolveToken(tokenIndex, rawValue, commandConfig, tokenBasedBooleanCheck);
+        fieldValue = resolvedFieldValue;
 
         fieldUniqueId = getUniqueId(fieldValue);
 
@@ -5443,7 +5533,7 @@ if (
 
         let rawUserName = cleanCommandToken(tokens[2]);
 
-        let resolvedUserName = tryResolveToken(2, rawUserName, commandConfig, false);
+        let { value: resolvedUserName, type } = tryResolveToken(2, rawUserName, commandConfig, false);
 
 
 
@@ -5599,7 +5689,7 @@ if (
 
 
         let rawParamValue = cleanCommandToken(tokens[2]);
-        const fieldValue = tryResolveToken(2, rawParamValue, commandConfig, false);
+        const { value: fieldValue, type } = tryResolveToken(2, rawParamValue, commandConfig, false);
 
 
         setEditSessionState(transId);
@@ -5620,7 +5710,9 @@ if (
 
         if (tokens.length > 2) {
             rawTitle = cleanCommandToken(tokens[2]);
-            paramValue = tryResolveToken(2, rawTitle, commandConfig, false);
+            // paramValue = tryResolveToken(2, rawTitle, commandConfig, false);
+            const { value, type } = tryResolveToken(2, rawTitle, commandConfig, false);
+            paramValue = value;
 
             redirectToTstruct(transId, cleanCommandToken(tokens[1]), true, fieldname, paramValue)
         }
@@ -5743,7 +5835,7 @@ if (
             const updated = transIdArray.filter(
                 x => x.toLowerCase() !== normalizedTransId
             );
-
+            console.log("SetEditSessioncachekey: " + storageKey);
             localStorage.setItem(storageKey, JSON.stringify(updated));
         }
     }
@@ -5887,10 +5979,12 @@ if (
 
         const viewDataSourceKey = `${viewDataSource}_${paramValue}`.toLowerCase();
         let rawStruct = cleanCommandToken(tokens[1]);
-        transId = tryResolveToken(1, rawStruct, commandConfig, false);
+        // transId = tryResolveToken(1, rawStruct, commandConfig, false);
+        const { value: rawStructValue, type: fieldType } = tryResolveToken(1, rawStruct, commandConfig, false);
+        transId = rawStructValue;
 
 
-        type = getType(viewDataSourceKey, transId, promptValues, tokens, commandConfig);
+        type = getType(viewDataSourceKey, { value: rawStructValue, type: fieldType }, promptValues, tokens, commandConfig);
 
         const handler = VIEW_HANDLERS[type];
 
@@ -5975,7 +6069,9 @@ if (
         //}
 
         rawFieldValue = cleanCommandToken(tokens[fieldValueIndex]);
-        fieldValue = tryResolveToken(fieldValueIndex, rawFieldValue, commandConfig, false);
+        // fieldValue = tryResolveToken(fieldValueIndex, rawFieldValue, commandConfig, false);
+        const { value } = tryResolveToken(fieldValueIndex, rawFieldValue, commandConfig, false);
+        fieldValue = value;
         fieldUniqueId = getUniqueId(fieldValue);
 
 
@@ -6116,8 +6212,8 @@ if (
 
         const tstructName = cleanString(tokens[2]);
         const keyField = cleanString(tokens[3]);
-        const actualFieldName = tryResolveToken(3, keyField, commandConfig, false);
-        const transId = tryResolveToken(2, tstructName, commandConfig, false);
+        const { value: actualFieldName } = tryResolveToken(3, keyField, commandConfig, false);
+        const { value: transId } = tryResolveToken(2, tstructName, commandConfig, false);
         if (!tstructName || !keyField) {
             showToast("TStruct and Key Field are required")
             console.log("TStruct and Key Field are required");
@@ -6159,83 +6255,502 @@ if (
         }
     }
 
+    // function getType(axDatasourceKey, text, paramValuesCsv, tokens, commandConfig) {
+    //     const paramList = paramValuesCsv?.split(",").map(v => v.trim().toLowerCase()).filter(Boolean);
+    //     const VALID_TYPES = new Set(paramList);
+
+    //     let paramValue;
+    //     // if (axDatasourceKey.toLowerCase() === "axi_viewlist") {
+
+    //     if (axDatasourceKey.toLowerCase() === "axi_structmetalist") {
+    //         paramValue = processExtraParams(tokens, commandConfig);
+    //         axDatasourceKey += "_" + paramValue.toLowerCase();
+    //     }
+
+
+
+    //     const data = axDatasourceObj?.[axDatasourceKey];
+
+    //     if (!data || !Array.isArray(data)) return null;
+
+    //     console.log(JSON.stringify(data));
+
+    //     const resolvedText = typeof text === 'object' ? (text?.value || "") : (text || "");
+
+    //     const resolvedType =
+    //         typeof text === "object"
+    //             ? (text?.type || "")
+    //             : "";
+
+
+
+    //     // const normalizedText = text.trim().toLowerCase();
+    //     const normalizedText = resolvedText.trim().toLowerCase();
+
+    //     // const rawTokenText = tokens[1] ? cleanCommandToken(tokens[1]).toLowerCase() : normalizedText;
+    //     const rawTokenText =
+    //         normalizedText ||
+    //         (tokens?.[1]
+    //             ? cleanCommandToken(tokens[1]).toLowerCase()
+    //             : "");
+
+    //     let bestMatch = null;
+
+    //     // const item = data?.find(d => {
+    //     //     if (typeof d.displaydata !== "string") return false;
+
+    //     //     if (d.name && d.name.toLowerCase() === normalizedText) {
+    //     //         return true;
+    //     //     }
+
+
+    //     //     const pureCaption = d.displaydata
+    //     //         .replace(/\s*\(.*?\)\s*(?=\[[^\]]+\]$)/, "")
+    //     //         .replace(/\s*\[[^\]]+\]\s*$/, "")
+    //     //         .trim()
+    //     //         .toLowerCase();
+
+    //     //     return pureCaption === normalizedText;
+    //     // });
+
+    //     bestMatch = data.find(d => typeof d.displaydata === "string" && d.displaydata.toLowerCase() === rawTokenText.toLowerCase());
+
+    //     if (!bestMatch) {
+    //         bestMatch = data.find(d => d.name && d.name.toLowerCase() === normalizedText);
+    //     }
+
+    //     if (!bestMatch) {
+    //         bestMatch = data.find(d => {
+    //             if (typeof d.displaydata !== "string") return false;
+
+    //             const pureCaption = d.displaydata
+    //                 .replace(/\s*\(.*?\)\s*(?=\[[^\]]+\]$)/, "")
+    //                 .replace(/\s*\[[^\]]+\]\s*$/, "")
+    //                 .trim()
+    //                 .toLowerCase();
+
+    //             return pureCaption === normalizedText || pureCaption === rawTokenText;
+    //         });
+    //     }
+
+    //     // if (!bestMatch || typeof bestMatch.displaydata !== "string") {
+    //     //     return null;
+    //     // }
+
+    //     // const matches = [...bestMatch.displaydata.matchAll(/\[([^\]]+)\]/g)];
+
+    //     // if (matches.length === 0) {
+    //     //     return null;
+    //     // }
+
+    //     // const candidate = matches[matches.length - 1][1].toLowerCase();
+
+    //     // return VALID_TYPES.has(candidate) ? candidate : null;
+
+    //     if (!bestMatch)
+    //         return resolvedType || "";
+
+    //     let candidate = "";
+
+
+    //     if (bestMatch.stype) {
+
+    //         const stypeMap = {
+    //             t: "tstruct",
+    //             i: "iview",
+    //             ads: "ads",
+    //             p: "page"
+    //         };
+
+    //         candidate =
+    //             stypeMap[
+    //             bestMatch.stype
+    //                 .toLowerCase()
+    //             ] || "";
+    //     }
+
+
+    //     if (
+    //         !candidate &&
+    //         typeof bestMatch.displaydata === "string"
+    //     ) {
+
+    //         const matches = [
+    //             ...bestMatch.displaydata.matchAll(/\[([^\]]+)\]/g)
+    //         ];
+
+    //         if (matches.length > 0) {
+    //             candidate =
+    //                 matches[
+    //                     matches.length - 1
+    //                 ][1].toLowerCase();
+    //         }
+    //     }
+
+
+    //     if (!candidate) {
+    //         candidate = resolvedType || "";
+    //     }
+
+    //     return VALID_TYPES.has(candidate)
+    //         ? candidate
+    //         : "";
+
+
+    // }
+
     function getType(axDatasourceKey, text, paramValuesCsv, tokens, commandConfig) {
-        const paramList = paramValuesCsv?.split(",").map(v => v.trim().toLowerCase()).filter(Boolean);
+
+        // -----------------------------------
+        // VALID TYPES FROM promptValues
+        // Example:
+        // tstruct,iview,ads,page
+        // -----------------------------------
+        const paramList = paramValuesCsv
+            ?.split(",")
+            .map(v => v.trim().toLowerCase())
+            .filter(Boolean);
+
         const VALID_TYPES = new Set(paramList);
 
         let paramValue;
-        // if (axDatasourceKey.toLowerCase() === "axi_viewlist") {
 
-        if (axDatasourceKey.toLowerCase() === "axi_structmetalist") {
-            paramValue = processExtraParams(tokens, commandConfig);
-            axDatasourceKey += "_" + paramValue.toLowerCase();
+        // -----------------------------------
+        // HANDLE axi_structmetalist
+        // -----------------------------------
+        if (
+            axDatasourceKey?.toLowerCase() ===
+            "axi_structmetalist"
+        ) {
+            paramValue = processExtraParams(
+                tokens,
+                commandConfig
+            );
+
+            axDatasourceKey +=
+                "_" + paramValue.toLowerCase();
         }
 
+        const data =
+            axDatasourceObj?.[axDatasourceKey];
 
-
-        const data = axDatasourceObj?.[axDatasourceKey];
-
-        if (!data || !Array.isArray(data)) return null;
+        if (!Array.isArray(data))
+            return "";
 
         console.log(JSON.stringify(data));
 
+        // -----------------------------------
+        // text may be:
+        //
+        // "slord"
+        //
+        // OR
+        //
+        // {
+        //   value:"slord",
+        //   type:"i"
+        // }
+        // -----------------------------------
+        const resolvedText =
+            typeof text === "object"
+                ? (text?.value || "")
+                : (text || "");
 
-        const normalizedText = text.trim().toLowerCase();
+        const resolvedType =
+            typeof text === "object"
+                ? (text?.type || "")
+                    .trim()
+                    .toLowerCase()
+                : "";
 
-        const rawTokenText = tokens[1] ? cleanCommandToken(tokens[1]).toLowerCase() : normalizedText;
+        const normalizedText =
+            resolvedText
+                .trim()
+                .toLowerCase();
 
         let bestMatch = null;
 
-        // const item = data?.find(d => {
-        //     if (typeof d.displaydata !== "string") return false;
+        // -----------------------------------
+        // stype -> actual type
+        // -----------------------------------
+        const stypeMap = {
+            t: "tstruct",
+            i: "iview",
+            ads: "ads",
+            p: "page"
+        };
 
-        //     if (d.name && d.name.toLowerCase() === normalizedText) {
-        //         return true;
-        //     }
+        // -----------------------------------
+        // normalize resolvedType
+        //
+        // i -> iview
+        // t -> tstruct
+        // -----------------------------------
+        const normalizedResolvedType =
+            stypeMap[
+            resolvedType
+            ] || resolvedType;
 
+        // ===================================
+        // STRICT TYPE MODE
+        //
+        // resolvedType exists
+        //
+        // 1. find ALL text matches
+        // 2. then match TYPE
+        //
+        // handles:
+        //
+        // slord[t]
+        // slord[i]
+        // ===================================
+        if (normalizedResolvedType) {
 
-        //     const pureCaption = d.displaydata
-        //         .replace(/\s*\(.*?\)\s*(?=\[[^\]]+\]$)/, "")
-        //         .replace(/\s*\[[^\]]+\]\s*$/, "")
-        //         .trim()
-        //         .toLowerCase();
+            // -----------------------------
+            // TEXT MATCHES FIRST
+            // -----------------------------
+            const matchingRows =
+                data.filter(d => {
 
-        //     return pureCaption === normalizedText;
-        // });
+                    const displayMatch =
+                        typeof d.displaydata ===
+                        "string" &&
+                        d.displaydata
+                            .toLowerCase() ===
+                        normalizedText;
 
-        bestMatch = data.find(d => typeof d.displaydata === "string" && d.displaydata.toLowerCase() === rawTokenText.toLowerCase());
+                    const nameMatch =
+                        d.name &&
+                        d.name
+                            .toLowerCase() ===
+                        normalizedText;
 
-        if (!bestMatch) {
-            bestMatch = data.find(d => d.name && d.name.toLowerCase() === normalizedText);
+                    const captionMatch =
+                        typeof d.displaydata ===
+                        "string" &&
+                        d.displaydata
+                            .replace(
+                                /\s*\(.*?\)\s*(?=\[[^\]]+\]$)/,
+                                ""
+                            )
+                            .replace(
+                                /\s*\[[^\]]+\]\s*$/,
+                                ""
+                            )
+                            .trim()
+                            .toLowerCase() ===
+                        normalizedText;
+
+                    return (
+                        displayMatch ||
+                        nameMatch ||
+                        captionMatch
+                    );
+                });
+
+            // -----------------------------
+            // THEN TYPE MATCH
+            // -----------------------------
+            bestMatch =
+                matchingRows.find(d => {
+
+                    let itemType = "";
+
+                    // stype priority
+                    if (d.stype) {
+                        itemType =
+                            stypeMap[
+                            d.stype
+                                .toLowerCase()
+                            ] || "";
+                    }
+
+                    // [type] fallback
+                    if (
+                        !itemType &&
+                        typeof d.displaydata ===
+                        "string"
+                    ) {
+
+                        const matches = [
+                            ...d.displaydata.matchAll(
+                                /\[([^\]]+)\]/g
+                            )
+                        ];
+
+                        if (
+                            matches.length > 0
+                        ) {
+
+                            itemType =
+                                matches[
+                                    matches.length - 1
+                                ][1]
+                                    .toLowerCase();
+                        }
+                    }
+
+                    // compare type
+                    return (
+                        itemType ===
+                        normalizedResolvedType
+                    );
+                });
+
+            // -----------------------------
+            // STRICT MODE
+            //
+            // no fallback to first slord
+            // -----------------------------
+            if (bestMatch) {
+
+                let candidate = "";
+
+                if (bestMatch.stype) {
+                    candidate =
+                        stypeMap[
+                        bestMatch.stype
+                            .toLowerCase()
+                        ] || "";
+                }
+
+                if (
+                    !candidate &&
+                    typeof bestMatch.displaydata ===
+                    "string"
+                ) {
+
+                    const matches = [
+                        ...bestMatch.displaydata.matchAll(
+                            /\[([^\]]+)\]/g
+                        )
+                    ];
+
+                    if (
+                        matches.length > 0
+                    ) {
+
+                        candidate =
+                            matches[
+                                matches.length - 1
+                            ][1]
+                                .toLowerCase();
+                    }
+                }
+
+                return VALID_TYPES.has(candidate)
+                    ? candidate
+                    : "";
+            }
+
+            return VALID_TYPES.has(
+                normalizedResolvedType
+            )
+                ? normalizedResolvedType
+                : "";
         }
 
+        // ===================================
+        // NORMAL MODE
+        //
+        // resolvedType empty
+        // old behavior
+        // ===================================
+
+        // displaydata
+        if (!bestMatch) {
+            bestMatch = data.find(d =>
+                typeof d.displaydata ===
+                "string" &&
+                d.displaydata
+                    .toLowerCase() ===
+                normalizedText
+            );
+        }
+
+        // name
+        if (!bestMatch) {
+            bestMatch = data.find(d =>
+                d.name &&
+                d.name
+                    .toLowerCase() ===
+                normalizedText
+            );
+        }
+
+        // caption
         if (!bestMatch) {
             bestMatch = data.find(d => {
-                if (typeof d.displaydata !== "string") return false;
 
-                const pureCaption = d.displaydata
-                    .replace(/\s*\(.*?\)\s*(?=\[[^\]]+\]$)/, "")
-                    .replace(/\s*\[[^\]]+\]\s*$/, "")
-                    .trim()
-                    .toLowerCase();
+                if (
+                    typeof d.displaydata !==
+                    "string"
+                )
+                    return false;
 
-                return pureCaption === normalizedText || pureCaption === rawTokenText;
+                const pureCaption =
+                    d.displaydata
+                        .replace(
+                            /\s*\(.*?\)\s*(?=\[[^\]]+\]$)/,
+                            ""
+                        )
+                        .replace(
+                            /\s*\[[^\]]+\]\s*$/,
+                            ""
+                        )
+                        .trim()
+                        .toLowerCase();
+
+                return (
+                    pureCaption ===
+                    normalizedText
+                );
             });
         }
 
-        if (!bestMatch || typeof bestMatch.displaydata !== "string") {
-            return null;
+        if (!bestMatch)
+            return "";
+
+        // ===================================
+        // FINAL TYPE RESOLUTION
+        // ===================================
+        let candidate = "";
+
+        // stype priority
+        if (bestMatch.stype) {
+            candidate =
+                stypeMap[
+                bestMatch.stype
+                    .toLowerCase()
+                ] || "";
         }
 
-        const matches = [...bestMatch.displaydata.matchAll(/\[([^\]]+)\]/g)];
+        // [type] fallback
+        if (
+            !candidate &&
+            typeof bestMatch.displaydata ===
+            "string"
+        ) {
 
-        if (matches.length === 0) {
-            return null;
+            const matches = [
+                ...bestMatch.displaydata.matchAll(
+                    /\[([^\]]+)\]/g
+                )
+            ];
+
+            if (matches.length > 0) {
+
+                candidate =
+                    matches[
+                        matches.length - 1
+                    ][1]
+                        .toLowerCase();
+            }
         }
 
-        const candidate = matches[matches.length - 1][1].toLowerCase();
-
-        return VALID_TYPES.has(candidate) ? candidate : null;
+        return VALID_TYPES.has(candidate)
+            ? candidate
+            : "";
     }
 
 
@@ -6323,7 +6838,7 @@ if (
         const type = cleanCommandToken(tokens[1]);
         let rawName = cleanCommandToken(tokens[2]);
 
-        let resolvedName = tryResolveToken(2, rawName, commandConfig, false);
+        let { value: resolvedName } = tryResolveToken(2, rawName, commandConfig, false);
 
 
         if (resolvedName === rawName) {
@@ -6376,7 +6891,9 @@ if (
 
 
         if (rawName) {
-            paramName = tryResolveToken(2, rawName, commandConfig, false);
+            // paramName = tryResolveToken(2, rawName, commandConfig, false);
+            const { value } = tryResolveToken(2, rawName, commandConfig, false);
+            paramName = value;
 
         }
 
@@ -6416,7 +6933,9 @@ if (
 
 
         if (rawName) {
-            paramName = tryResolveToken(2, rawName, commandConfig, false);
+            // paramName = tryResolveToken(2, rawName, commandConfig, false);
+            const { value, type } = tryResolveToken(2, rawName, commandConfig, false);
+            paramName = value;
 
         }
 
@@ -6602,7 +7121,7 @@ if (
 
         console.log("All Buttons: " + JSON.stringify(allButtons));
 
-        let resolvedBtnId = tryResolveToken(1, buttonLabel, commandConfig, false);
+        let { value: resolvedBtnId, type } = tryResolveToken(1, buttonLabel, commandConfig, false);
 
         console.log(`Run Command Debug: Label="${buttonLabel}", ResolvedID="${resolvedBtnId}"`);
 
@@ -7327,16 +7846,17 @@ if (
         // else {
 
         const captionSelected = cleanString(tokens[1]);
-        const transIdAnalyse = tryResolveToken(1, captionSelected, commandConfig);
+        const { value: transIdAnalyse, type: resolvedType } = tryResolveToken(1, captionSelected, commandConfig);
         const paramValuesCsv = "tstruct,ads"
 
-        const type = getType(commandConfig?.prompts?.[0]?.promptSource.toLowerCase(), transIdAnalyse, paramValuesCsv, tokens, commandConfig);
+        // const type = getType(commandConfig?.prompts?.[0]?.promptSource.toLowerCase(), transIdAnalyse, paramValuesCsv, tokens, commandConfig);
+        const type = getType(commandConfig?.prompts?.[0]?.promptSource.toLowerCase(), { value: transIdAnalyse, type: resolvedType }, paramValuesCsv, tokens, commandConfig);
 
         targetUrl += `?entity=${encodeURIComponent(transIdAnalyse)}`;
 
         if (tokens.length == 3) {
             let groupByFieldCaption = cleanString(tokens[2]);
-            const groupByFiedlname = tryResolveToken(2, groupByFieldCaption, commandConfig);
+            const { value: groupByFiedlname } = tryResolveToken(2, groupByFieldCaption, commandConfig);
             targetUrl += `&groupby=${encodeURIComponent(groupByFiedlname)}`;
         }
         else if (tokens.length > 3) {
@@ -7533,7 +8053,9 @@ if (
         const partialTyped = cleanString(tokens[targetIndex]);
 
         const createTransId = cleanCommandToken(tokens[1]);
-        setCommandTransid = tryResolveToken(1, createTransId, commandConfig, false);
+        // setCommandTransid = tryResolveToken(1, createTransId, commandConfig, false);
+        const { value, type } = tryResolveToken(1, createTransId, commandConfig, false);
+        setCommandTransid = value;
 
         if (SET_COMMAND_STATE.transid === null || setCommandTransid !== SET_COMMAND_STATE.transid) {
             SET_COMMAND_STATE = {
@@ -7555,7 +8077,9 @@ if (
 
             if (SET_COMMAND_STATE.currentField) {
                 let previousColumnName = SET_COMMAND_STATE.currentField;
-                previousColumnName = tryResolveToken(targetIndex - 2, previousColumnName, commandConfig, false);
+                // previousColumnName = tryResolveToken(targetIndex - 2, previousColumnName, commandConfig, false);
+                const { value, type } = tryResolveToken(targetIndex - 2, previousColumnName, commandConfig, false);
+                previousColumnName = value;
                 let previousColumnValue = SET_COMMAND_STATE.currentFieldValue;
                 //AddFieldstoList(previousColumnName, 1, previousColumnValue);
                 AddFieldstoList(previousColumnName, 1, previousColumnValue, setCommandTransid);
@@ -8023,7 +8547,9 @@ if (
         const partialTyped = cleanString(tokens[targetIndex]);
 
         const createTransId = cleanCommandToken(tokens[1]);
-        setCommandTransid = tryResolveToken(1, createTransId, commandConfig, false);
+        // setCommandTransid = tryResolveToken(1, createTransId, commandConfig, false);
+        const { value, type } = tryResolveToken(1, createTransId, commandConfig, false);
+        setCommandTransid = value;
 
         if (SET_COMMAND_STATE.transid === null || setCommandTransid !== SET_COMMAND_STATE.transid) {
             SET_COMMAND_STATE = {
@@ -8045,7 +8571,9 @@ if (
 
             if (SET_COMMAND_STATE.currentField) {
                 let previousColumnName = SET_COMMAND_STATE.currentField;
-                previousColumnName = tryResolveToken(targetIndex - 2, previousColumnName, commandConfig, false);
+                // previousColumnName = tryResolveToken(targetIndex - 2, previousColumnName, commandConfig, false);
+                const { value, type } = tryResolveToken(targetIndex - 2, previousColumnName, commandConfig, false);
+                previousColumnName = value;
                 let previousColumnValue = SET_COMMAND_STATE.currentFieldValue;
                 AddFieldstoList(previousColumnName, 1, previousColumnValue, setCommandTransid);
             }
@@ -8638,7 +9166,7 @@ if (
 
         if (tokens.length <= 3) {
             let rawName = cleanCommandToken(tokens[1]);
-            let transId = tryResolveToken(1, rawName, commandConfig, false);
+            let { value: transId, type } = tryResolveToken(1, rawName, commandConfig, false);
 
             if (transId === rawName) {
                 const list = axDatasourceObj["Axi_TStructList".toLowerCase()];
@@ -8685,7 +9213,7 @@ if (
         }
 
         let rawName = cleanCommandToken(tokens[1]);
-        let transId = tryResolveToken(1, rawName, commandConfig, false);
+        let { value: transId, type } = tryResolveToken(1, rawName, commandConfig, false);
 
         //if (!transId ) {
         //    console.log("Missing transaction ID or field values.");
@@ -9686,7 +10214,6 @@ if (
                 };
 
                 console.log("PreparedPayload : Payload is created successfully with isCreate :", iscreate);
-                console.log(payload);
 
             }
             catch (ex) {
@@ -9957,6 +10484,7 @@ if (
                             targetUrl: item.targetUrl || item.targetURL || item.targeturl,
                             createdOn: item.createdOn
                         }));
+                        console.log("favKey");
                         localStorage.setItem(favKey, JSON.stringify(commandFavorites));
                         renderFavoritesUI();
                     }
@@ -10427,25 +10955,63 @@ if (
 
         if (!commandsFromDb["Configure"]) return commandsFromDb;
 
-        const isAdmin = currentUserName === "admin" && currentUserRole === "default";
+        // const isAdmin = currentUserName === "admin" && currentUserRole === "default";
+        const isAdmin = false;
 
         if (!isAdmin) {
             const configurePrompts = commandsFromDb["Configure"].prompts;
 
-            configurePrompts.forEach(prompt => {
-                if (prompt.prompt === "object type" && prompt.promptValues) {
-                    let values = prompt.promptValues.split(",");
+            // configurePrompts.forEach(prompt => {
+            //     if (prompt.prompt === "object type" && prompt.promptValues) {
+            //         let values = prompt.promptValues.split(",");
 
-                    values = values.filter(v => v.trim() !== "User Activation");
+            //         values = values.filter(v => v.trim() !== "User Activation");
 
-                    prompt.promptValues = values.join(",");
+            //         prompt.promptValues = values.join(",");
+            //     }
+            // });
+
+            const objectTypePrompt = configurePrompts.find(p => p.prompt === "object type");
+
+            const objectNamePrompt = configurePrompts.find(p => p.prompt === "object name");
+
+            if (objectTypePrompt && objectNamePrompt) {
+                const types = objectTypePrompt.promptValues.split(",");
+                const sources = objectNamePrompt.promptSource.split(",");
+
+                const index = types.findIndex(
+                    t => t.trim() === "User Activation"
+                );
+
+                if (index !== -1) {
+                    types.splice(index, 1);
+                    sources.splice(index, 1);
+
+                    objectTypePrompt.promptValues = types.join(",");
+                    objectNamePrompt.promptSource = sources.join(",");
                 }
-            });
+
+            }
         }
 
         return commandsFromDb;
 
 
+    }
+
+    function setButtonLoading(buttonId, spinnerId, isLoading) {
+        const button = document.getElementById(buttonId);
+        const spinner = document.getElementById(spinnerId);
+        if (button) {
+            button.disabled = isLoading;
+        }
+        if (spinner) {
+            if (isLoading) {
+                spinner.classList.remove("d-none");
+            } else {
+                spinner.classList.add("d-none");
+            }
+        }
     }
 
     function strToBool(str) {
@@ -10473,6 +11039,9 @@ if (
         favNameInput.value = cmdText;
         favTargetUrlInput.value = targetUrl;
 
+        // Reset loading state on open
+        setButtonLoading("axiFavSaveBtn", "axiFavSaveSpinner", false);
+
         axiFavModal.style.display = "flex";
         favNameInput.focus();
         favNameInput.select();
@@ -10490,27 +11059,21 @@ if (
         const targetUrl = document.getElementById("axiFavTargetUrl").value.trim();
         const isEdit = document.getElementById("axiFavIsEdit").value === "true";
 
-
-
-
         if (!alias) {
             showToast("Favorite name cannot be empty");
             return;
         }
 
+        // Start loading
+        setButtonLoading("axiFavSaveBtn", "axiFavSaveSpinner", true);
+
         const appUrl = getAppBaseUrl();
         const appname = getProjectName();
         const favKey = `axi_favourites_${appUrl}_${window.mainUserName}`;
 
-
-
         if (isEdit) {
             const cmdIndex = commandFavorites.findIndex(fav => fav.commandText.toLowerCase() === originalCmdText.toLowerCase());
-
             const favObj = commandFavorites.find(fav => fav.commandText.toLowerCase() === originalCmdText.toLowerCase());
-
-
-
 
             if (cmdIndex !== -1) {
                 commandFavorites[cmdIndex].commandText = alias;
@@ -10531,19 +11094,20 @@ if (
                         render();
                         hideFavoriteModal();
                         showToast(`Renamed '${originalCmdText}' to '${alias}'`, 3000, true);
-
+                    } else {
+                        setButtonLoading("axiFavSaveBtn", "axiFavSaveSpinner", false);
+                        showToast("Failed to edit favourite");
                     }
-
                 })
                     .catch(error => {
                         console.error("Backend edit failed", error);
                         showToast("An Error occured while editing favourite");
-                    })
+                        setButtonLoading("axiFavSaveBtn", "axiFavSaveSpinner", false);
+                    });
+            } else {
+                setButtonLoading("axiFavSaveBtn", "axiFavSaveSpinner", false);
             }
         } else {
-
-
-
             if (axiFavoritesUrl) {
                 fetch(`${axiFavoritesUrl}?appname=${appname}`, {
                     method: "POST",
@@ -10556,35 +11120,16 @@ if (
                         favOrder: 0,
                         targetURL: targetUrl
                     })
-                    //  username: window.mainUserName,
-                    //             commandText: cmdText,
-                    //             action: isAdding ? "add" : "remove",
-                    //             favOrder: 0,
-                    //             targetURL: commandRoute?.targetUrl
                 }).then(
                     response => {
                         if (response.ok) {
-                            // commandFavorites.unshift({
-                            //     commandText: alias,
-                            //     originalCmd: originalCmdText,
-                            //     targetUrl: targetUrl
-                            // });
-
-                            // localStorage.setItem(favKey, JSON.stringify(commandFavorites));
-                            // renderFavoritesUI();
-                            // render();
-                            // hideFavoriteModal();
-
-                            // showToast(`'${alias}' added to favorites`, 5000, true);
-
                             return response.json();
+                        } else {
+                            throw new Error("Failed response");
                         }
                     }
                 ).then(data => {
                     console.log("Response from backend after adding favorite: ", data);
-                    // if (data) {
-
-                    // }
                     const favObj = data[0];
 
                     commandFavorites.unshift({
@@ -10603,24 +11148,16 @@ if (
                     hideFavoriteModal();
 
                     showToast(`'${alias}' added to favorites`, 5000, true);
-
                 })
                     .catch(err => {
                         showToast("Axi: Failed to update favorite on backend");
                         console.error("Backend sync failed", err);
+                        setButtonLoading("axiFavSaveBtn", "axiFavSaveSpinner", false);
                     });
+            } else {
+                setButtonLoading("axiFavSaveBtn", "axiFavSaveSpinner", false);
             }
-
         }
-
-
-
-
-
-
-
-
-
     }
 
     function showDeleteFavoriteModal(cmdText) {
@@ -10633,9 +11170,11 @@ if (
         favDeleteCmdText.value = cmdText;
         const deleteModalParagraph = document.getElementById("axiDeleteModalParagraph");
         deleteModalParagraph.textContent = `Are you sure you want to remove '${cmdText}' from your favourites?`;
+
+        // Reset loading state on open
+        setButtonLoading("axiFavDeleteConfirmBtn", "axiFavDeleteSpinner", false);
+
         modal.style.display = "flex";
-
-
     }
 
     function hideDeleteFavoriteModal() {
@@ -10648,7 +11187,6 @@ if (
         if (!cmdText) return;
 
         executeDeleteFavorite(cmdText);
-        hideDeleteFavoriteModal();
     }
 
     function executeDeleteFavorite(cmdText) {
@@ -10662,8 +11200,10 @@ if (
         );
 
         if (cmdIndex !== -1) {
-            const removedFav = commandFavorites.splice(cmdIndex, 1)[0];
+            const removedFav = commandFavorites[cmdIndex];
 
+            // Start loading
+            setButtonLoading("axiFavDeleteConfirmBtn", "axiFavDeleteSpinner", true);
 
             if (axiFavoritesUrl) {
                 fetch(`${axiFavoritesUrl}?appname=${appname}`, {
@@ -10679,15 +11219,27 @@ if (
                     })
                 }).then(response => {
                     if (response.ok) {
+                        commandFavorites.splice(cmdIndex, 1);
                         showToast(`Removed '${removedFav.commandText}' from Favorites`);
 
                         localStorage.setItem(favKey, JSON.stringify(commandFavorites));
                         renderFavoritesUI();
                         render();
 
+                        hideDeleteFavoriteModal();
+                    } else {
+                        setButtonLoading("axiFavDeleteConfirmBtn", "axiFavDeleteSpinner", false);
+                        showToast("Failed to delete favorite on backend");
                     }
                 })
-                    .catch(err => console.error("Axi: Failed to delete on backend", err));
+                    .catch(err => {
+                        console.error("Axi: Failed to delete on backend", err);
+                        setButtonLoading("axiFavDeleteConfirmBtn", "axiFavDeleteSpinner", false);
+                        showToast("Error deleting favorite");
+                    });
+            } else {
+                setButtonLoading("axiFavDeleteConfirmBtn", "axiFavDeleteSpinner", false);
+                showToast("Backend API URL is not configured. Cannot delete.");
             }
         }
     }
