@@ -534,9 +534,10 @@ Insert into AXDIRECTSQL (AXDIRECTSQLID,CANCEL,SOURCEID,MAPNAME,USERNAME,MODIFIED
     from axdirectsql a
     left join axdirectsql_metadata b on a.axdirectsqlid = b.axdirectsqlid
     where a.sqlname = :param1',
-    'param1','param1~Character~','ALL',null,null,'F','6 Hr',null,null,null,null,null);
+    'param1','param1~Character~','ALL',null,null,'F','6 Hr',null,null,null,null,null)
 >>
 
+<<
 Insert into AXDIRECTSQL (AXDIRECTSQLID,CANCEL,SOURCEID,MAPNAME,USERNAME,MODIFIEDON,CREATEDBY,CREATEDON,WKID,APP_LEVEL,APP_DESC,APP_SLEVEL,CANCELREMARKS,WFROLES,SQLNAME,DDLDATATYPE,SQLSRC,SQLSRCCND,SQLTEXT,PARAMCAL,SQLPARAMS,ACCESSSTRING,GROUPNAME,SQLQUERYCOLS,CACHEDATA,CACHEINTERVAL,ENCRYPTEDFLDS,ADSDESC,SMARTLISTCND,PAGINATION,APPLYDIMENSIONS) values (99999999990037,'F',0,null,'rekhancia',to_date('20-05-26','DD-MM-RR'),'rekhancia',to_date('20-05-26','DD-MM-RR'),null,1,1,null,null,null,'axi_adscolumnlist',null,'Metadata',1,'select b.fldcaption || ''('' || b.fldname || '')'' displaydata,
        b.fldname name,
        b.fldcaption caption,
@@ -558,6 +559,7 @@ left join axpflds f
        on b.srctransid = f.tstruct
       and b.srcfldname = f.fname
 where a.sqlname = :param1','param1','param1~Character~','ALL',null,null,'F','6 Hr',null,null,null,null,null)
+>>
 
 <<
 Insert into AXDIRECTSQL (AXDIRECTSQLID,CANCEL,SOURCEID,MAPNAME,USERNAME,MODIFIEDON,CREATEDBY,CREATEDON,WKID,APP_LEVEL,APP_DESC,APP_SLEVEL,CANCELREMARKS,WFROLES,SQLNAME,DDLDATATYPE,SQLSRC,SQLSRCCND,SQLTEXT,PARAMCAL,SQLPARAMS,ACCESSSTRING,GROUPNAME,SQLQUERYCOLS,CACHEDATA,CACHEINTERVAL,ENCRYPTEDFLDS,ADSDESC,SMARTLISTCND,PAGINATION,APPLYDIMENSIONS) values (99999999990038,'F',0,null,'rekhancia',to_date('20-05-26','DD-MM-RR'),'rekhancia',to_date('20-05-26','DD-MM-RR'),null,1,1,null,null,null,'axi_newsandannounce',null,'Metadata',1,'select title as displaydata,title as caption,title as name from axpdef_news_events order by title asc',null,null,'ALL',null,null,'F','6 Hr',null,null,null,'T','F')
