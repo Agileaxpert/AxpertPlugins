@@ -495,6 +495,9 @@ VALUES(99999999990027, 'F', 0, NULL, 'admin', '2025-12-23 13:22:07.000', 'admin'
 >>
 
 
+
+
+
 <<
 INSERT INTO axdirectsql
 (axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqlsrc, sqlsrccnd, sqltext, paramcal, sqlparams, accessstring, groupname, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd)
