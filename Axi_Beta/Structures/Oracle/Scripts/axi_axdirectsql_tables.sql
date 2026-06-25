@@ -542,7 +542,7 @@ left join axpflds f
 where a.sqlname = :param1','param1','param1~Character~','ALL',null,null,'F','6 Hr',null,null,null,null,null)
 >>
 
-<<
+
 Insert into AXDIRECTSQL (AXDIRECTSQLID,CANCEL,SOURCEID,MAPNAME,USERNAME,MODIFIEDON,CREATEDBY,CREATEDON,WKID,APP_LEVEL,APP_DESC,APP_SLEVEL,CANCELREMARKS,WFROLES,SQLNAME,DDLDATATYPE,SQLSRC,SQLSRCCND,SQLTEXT,PARAMCAL,SQLPARAMS,ACCESSSTRING,GROUPNAME,SQLQUERYCOLS,CACHEDATA,CACHEINTERVAL,ENCRYPTEDFLDS,ADSDESC,SMARTLISTCND,PAGINATION,APPLYDIMENSIONS) values (99999999990037,'F',0,null,'rekhancia',to_date('20-05-26','DD-MM-RR'),'rekhancia',to_date('20-05-26','DD-MM-RR'),null,1,1,null,null,null,'axi_adscolumnlist',null,'Metadata',1,'select b.fldcaption || ''('' || b.fldname || '')'' displaydata,
            b.fldname name,
            b.fldcaption caption,
@@ -558,7 +558,7 @@ Insert into AXDIRECTSQL (AXDIRECTSQLID,CANCEL,SOURCEID,MAPNAME,USERNAME,MODIFIED
     left join axdirectsql_metadata b on a.axdirectsqlid = b.axdirectsqlid
     where a.sqlname = :param1',
     'param1','param1~Character~','ALL',null,null,'F','6 Hr',null,null,null,null,null)
->>
+
 
 
 
@@ -570,9 +570,8 @@ Insert into AXDIRECTSQL (AXDIRECTSQLID,CANCEL,SOURCEID,MAPNAME,USERNAME,MODIFIED
 INSERT INTO axdirectsql (axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level, app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqlsrc, sqlsrccnd, sqltext, paramcal, sqlparams, accessstring, groupname, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd) VALUES(99999999990039, 'F', 0, NULL, 'admin', to_date('2025-12-23 13:22:07', 'YYYY-MM-DD HH24:MI:SS'), 'admin', to_date('2025-12-19 16:06:57', 'YYYY-MM-DD HH24:MI:SS'), NULL, 1, 1, NULL, NULL, NULL, 'axi_getstructsdata', NULL, 'Metadata', 5, 'select * from TABLE(fn_axi_getstructs_obj(:param1, :param2, :param3, :param4, :param5, :param6, :param7, :param8, :param9, :param10))', 'param1,param2,param3,param4,param5,param6,param7,param8,param9,param10', 'param1~~,param2~~,param3~~,param4~~,param5~~param6~~,param7~~,param8~~,param9~~,param10~~', 'ALL', NULL, NULL, 'F', '6 Hr', NULL, NULL, NULL)
 >>
 
-<<
+
 INSERT INTO axdirectsql (axdirectsqlid, cancel, sourceid, mapname, username, modifiedon, createdby, createdon, wkid, app_level,app_desc, app_slevel, cancelremarks, wfroles, sqlname, ddldatatype, sqlsrc, sqlsrccnd, sqltext, paramcal, sqlparams, accessstring, groupname, sqlquerycols, cachedata, cacheinterval, encryptedflds, adsdesc, smartlistcnd, pagination, applydimensions) values (99999999990051, 'F', 0, NULL, 'admin', TO_DATE('2025-12-23 13:22:07', 'YYYY-MM-DD HH24:MI:SS'), 'admin',
   TO_DATE('2025-12-19 16:06:57', 'YYYY-MM-DD HH24:MI:SS'), NULL, 1, 1, NULL, NULL, NULL, 'axi_smartviewlist', NULL, 'Metadata', 1,
   'select adsname as displaydata,adsname as caption,adsname as name from axpdef_smartlist order by adsname asc', NULL, NULL, 'ALL',
   NULL, NULL, 'F', '6 Hr', NULL, NULL, NULL, NULL, NULL)
->>
