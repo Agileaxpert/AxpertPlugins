@@ -17,11 +17,11 @@ delete from axdirectsql where sqlname='ds_getsmartlists';
 >>
 
 <<
-ALTER TABLE axdirectsql ADD pagination VARCHAR2(1) NULL;
+ALTER TABLE axdirectsql ADD pagination VARCHAR(1) NULL;
 >>
 
 <<
-ALTER TABLE axdirectsql ADD applydimensions VARCHAR2(1) NULL;
+ALTER TABLE axdirectsql ADD applydimensions VARCHAR(1) NULL;
 >>
 
 
