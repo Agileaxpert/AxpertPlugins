@@ -257,6 +257,10 @@ ALTER TABLE axdirectsql ADD adsdesc text NULL
 >>
 
 <<
+ALTER TABLE axdirectsql ADD pagination varchar(1) NULL
+>>
+
+<<
 CREATE TABLE axdirectsql_metadata (
 	axdirectsql_metadataid numeric(16) NOT NULL,
 	axdirectsqlid numeric(16) NULL,
