@@ -222,7 +222,7 @@ CREATE TABLE axdirectsql (
     ddldatatype VARCHAR2(20) NULL,
     sqlsrc VARCHAR2(30) NULL,
     sqlsrccnd NUMBER(10) NULL,
-    sqltext CLOB NULL,
+    sqltext NCLOB NULL,
     paramcal VARCHAR2(200) NULL,
     sqlparams VARCHAR2(2000) NULL,
     accessstring VARCHAR2(500) NULL,
@@ -231,7 +231,7 @@ CREATE TABLE axdirectsql (
     cachedata VARCHAR2(1) NULL,
     cacheinterval VARCHAR2(10) NULL,
     encryptedflds VARCHAR2(4000) NULL,
-    adsdesc CLOB NULL,
+    adsdesc NCLOB NULL,
     CONSTRAINT aglaxdirectsqlid PRIMARY KEY (axdirectsqlid)
 )
 >>
@@ -253,7 +253,7 @@ ALTER TABLE axdirectsql ADD encryptedflds VARCHAR2(4000) NULL
 >>
 
 <<
-ALTER TABLE axdirectsql ADD adsdesc text NULL
+ALTER TABLE axdirectsql ADD adsdesc NCLOB NULL
 >>
 
 <<
