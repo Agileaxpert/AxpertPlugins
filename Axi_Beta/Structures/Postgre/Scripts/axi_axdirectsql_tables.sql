@@ -203,7 +203,6 @@ DELETE FROM axdirectsql where sqlname = 'axi_useractivation'
 DELETE FROM axdirectsql where sqlname = 'axi_smartviewlist'
 >>
 
-
 -- axdirectsql DDL
 
 <<
@@ -258,6 +257,10 @@ ALTER TABLE axdirectsql ADD adsdesc text NULL
 
 <<
 ALTER TABLE axdirectsql ADD pagination varchar(1) NULL
+>>
+
+<<
+ALTER TABLE axdirectsql ADD applydimensions varchar(1) NULL
 >>
 
 <<

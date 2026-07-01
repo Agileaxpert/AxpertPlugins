@@ -198,8 +198,9 @@ DELETE FROM axdirectsql where axdirectsqlid = 99999999990049
 DELETE FROM axdirectsql where axdirectsqlid = 99999999990050
 >>
 
-
+<<
 DELETE FROM axdirectsql where sqlname = 'axi_smartviewlist'
+>>
 
 
 <<
@@ -222,7 +223,7 @@ CREATE TABLE axdirectsql (
     ddldatatype VARCHAR2(20) NULL,
     sqlsrc VARCHAR2(30) NULL,
     sqlsrccnd NUMBER(10) NULL,
-    sqltext NCLOB NULL,
+    sqltext CLOB NULL,
     paramcal VARCHAR2(200) NULL,
     sqlparams VARCHAR2(2000) NULL,
     accessstring VARCHAR2(500) NULL,
@@ -231,7 +232,7 @@ CREATE TABLE axdirectsql (
     cachedata VARCHAR2(1) NULL,
     cacheinterval VARCHAR2(10) NULL,
     encryptedflds VARCHAR2(4000) NULL,
-    adsdesc NCLOB NULL,
+    adsdesc CLOB NULL,
     CONSTRAINT aglaxdirectsqlid PRIMARY KEY (axdirectsqlid)
 )
 >>
@@ -253,7 +254,7 @@ ALTER TABLE axdirectsql ADD encryptedflds VARCHAR2(4000) NULL
 >>
 
 <<
-ALTER TABLE axdirectsql ADD adsdesc NCLOB NULL
+ALTER TABLE axdirectsql ADD adsdesc CLOB NULL
 >>
 
 <<
@@ -519,7 +520,15 @@ Insert into AXDIRECTSQL (AXDIRECTSQLID,CANCEL,SOURCEID,MAPNAME,USERNAME,MODIFIED
 
 
 <<
-Insert into AXDIRECTSQL (AXDIRECTSQLID,CANCEL,SOURCEID,MAPNAME,USERNAME,MODIFIEDON,CREATEDBY,CREATEDON,WKID,APP_LEVEL,APP_DESC,APP_SLEVEL,CANCELREMARKS,WFROLES,SQLNAME,DDLDATATYPE,SQLSRC,SQLSRCCND,SQLTEXT,PARAMCAL,SQLPARAMS,ACCESSSTRING,GROUPNAME,SQLQUERYCOLS,CACHEDATA,CACHEINTERVAL,ENCRYPTEDFLDS,ADSDESC,SMARTLISTCND,PAGINATION,APPLYDIMENSIONS) values (99999999990037,'F',0,null,'rekhancia',to_date('20-05-26','DD-MM-RR'),'rekhancia',to_date('20-05-26','DD-MM-RR'),null,1,1,null,null,null,'axi_adscolumnlist',null,'Metadata',1,'select b.fldcaption || ''('' || b.fldname || '')'' displaydata,
+Insert into AXDIRECTSQL (
+    AXDIRECTSQLID, CANCEL, SOURCEID, MAPNAME, USERNAME, MODIFIEDON, CREATEDBY, CREATEDON, 
+    WKID, APP_LEVEL, APP_DESC, APP_SLEVEL, CANCELREMARKS, WFROLES, SQLNAME, DDLDATATYPE, 
+    SQLSRC, SQLSRCCND, SQLTEXT, PARAMCAL, SQLPARAMS, ACCESSSTRING, GROUPNAME, SQLQUERYCOLS, 
+    CACHEDATA, CACHEINTERVAL, ENCRYPTEDFLDS, ADSDESC, SMARTLISTCND, PAGINATION, APPLYDIMENSIONS
+) values (
+    99999999990037, 'F', 0, null, 'rekhancia', to_date('20-05-26','DD-MM-RR'), 'rekhancia', to_date('20-05-26','DD-MM-RR'), 
+    null, 1, 1, null, null, null, 'axi_adscolumnlist', null, 'Metadata', 1, 
+    'select b.fldcaption || ''('' || b.fldname || '')'' displaydata,
            b.fldname name,
            b.fldcaption caption,
            b.normalized,
@@ -532,8 +541,10 @@ Insert into AXDIRECTSQL (AXDIRECTSQLID,CANCEL,SOURCEID,MAPNAME,USERNAME,MODIFIED
            END AS filters
     from axdirectsql a
     left join axdirectsql_metadata b on a.axdirectsqlid = b.axdirectsqlid
-    where a.sqlname = :param1',
-    'param1','param1~Character~','ALL',null,null,'F','6 Hr',null,null,null,null,null)
+    where a.sqlname = :param1
+    AND b.axdirectsqlid IS NOT NULL',
+    'param1', 'param1~Character~', 'ALL', null, null, 'F', '6 Hr', null, null, null, null, null
+)
 >>
 
 
